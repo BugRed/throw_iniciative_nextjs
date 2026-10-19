@@ -5,16 +5,30 @@
 // via @map, tabelas plurais via @@map, como o resto do schema.
 
 model user {
-  id            String   @id @db.Uuid
+  id            String    @id @db.Uuid
   name          String
-  email         String   @unique
-  emailVerified Boolean  @default(false) @map("email_verified")
+  email         String    @unique
+  emailVerified Boolean   @default(false) @map("email_verified")
   image         String?
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  // Soft delete (P12): conta "excluída" é marcada, não apagada — preserva
+  // auditoria por 7 dias antes da purga real. A lib não conhece a coluna;
+  // ela é escrita apenas pelo fluxo de exclusão de conta.
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   sessions Session[]
   accounts Account[]
+
+  characters            Character[] @relation("OwnedCharacters") // dono de fichas (PJ e NPC completo)
+  npcTemplates          NpcTemplate[] @relation("OwnedNpcTemplates") // dono de modelos de NPC
+  masteredRooms         Room[] @relation("MasteredRooms") // salas que criou
+  roomMemberships       RoomMember[] @relation("RoomMemberships")
+  activeRoomCharacters  RoomCharacter[] @relation("ActiveRoomCharacters") // PJ ativo em cada sala
+  responsibleParticipants InitiativeParticipant[] @relation("ResponsibleParticipants")
+  notifications         Notification[] @relation("Notifications")
+  auditRolls            AuditRoll[] @relation("AuditRolls") // sobrevive como NULL se o user sair
+  auditLogs             AuditLog[] @relation("AuditLogs")
 
   @@map("users")
 }

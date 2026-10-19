@@ -1,0 +1,106 @@
+// Salas — uma mesa de jogo: mestre, membros, seleção de PJ ativo e NPCs
+// temporários. `code` (6 chars) é a chave de entrada; a UNIQUE
+// (room_id, active_for_user_id) em RoomCharacter garante 1 PJ ativo por
+// jogador por sala (o upsert do service troca o PJ em vez de duplicar).
+
+enum RoomStatus {
+  lobby
+  active
+  finished
+  destroyed
+
+  @@map("room_status")
+}
+
+enum MemberRole {
+  master
+  player
+
+  @@map("member_role")
+}
+
+model Room {
+  id             String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  masterUserId   String?    @map("master_user_id") @db.Uuid
+  master         user?      @relation("MasteredRooms", fields: [masterUserId], references: [id], onDelete: SetNull)
+  name           String
+  code           String     @unique
+  status         RoomStatus @default(lobby)
+  turnSeconds    Int        @default(120) @map("turn_seconds")
+  customSoundUrl String?    @map("custom_sound_url")
+  isPaused       Boolean    @default(false) @map("is_paused")
+  destroyedAt    DateTime?  @map("destroyed_at") @db.Timestamptz(6)
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  members   RoomMember[]
+  characterRoomCharacters RoomCharacter[]
+  tempNpcs  RoomTempNpc[]
+  initiatives Initiative[]
+  notifications Notification[]
+  auditRolls  AuditRoll[]
+  auditLogs   AuditLog[]
+
+  @@index([masterUserId])
+  @@map("rooms")
+}
+
+// Membro único por sala: PK composta (room_id, user_id). O papel é fixo no
+// ingresso — mestre é quem criou a sala; os demais entram como player.
+model RoomMember {
+  roomId   String     @map("room_id") @db.Uuid
+  room     Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId   String     @map("user_id") @db.Uuid
+  user     user       @relation("RoomMemberships", fields: [userId], references: [id], onDelete: Cascade)
+  role     MemberRole @default(player)
+  joinedAt DateTime   @default(now()) @map("joined_at") @db.Timestamptz(6)
+
+  @@id([roomId, userId])
+  @@index([userId])
+  @@map("room_members")
+}
+
+// Qual personagem está na sala e qual é o PJ ativo de cada jogador.
+// `activeForUserId` é preenchido só para PJ; a UNIQUE parcial
+// (room_id, active_for_user_id) aceita vários NULL (NPCs) mas impede dois
+// PJ ativos do mesmo jogador — o service faz upsert nela para trocar o PJ.
+model RoomCharacter {
+  roomId           String    @map("room_id") @db.Uuid
+  room             Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  characterId      String    @map("character_id") @db.Uuid
+  character        Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  isNpc            Boolean   @default(false) @map("is_npc")
+  activeForUserId  String?   @map("active_for_user_id") @db.Uuid
+  activeForUser    user?     @relation("ActiveRoomCharacters", fields: [activeForUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@id([roomId, characterId])
+  @@unique([roomId, activeForUserId])
+  @@index([characterId])
+  @@map("room_characters")
+}
+
+// Instância de NPC temporário criada a partir de um template (ex.: "Goblin #3"
+// de uma instanciação ×4). Copia os stats do template no momento da criação —
+// editar o template depois não altera instâncias vivas.
+model RoomTempNpc {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId         String      @map("room_id") @db.Uuid
+  room           Room        @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  npcTemplateId  String?     @map("npc_template_id") @db.Uuid
+  npcTemplate    NpcTemplate? @relation(fields: [npcTemplateId], references: [id], onDelete: SetNull)
+  label          String
+  instanceNumber Int         @map("instance_number")
+  hpCurrent      Int         @map("hp_current")
+  hpMax          Int         @map("hp_max")
+  armorClass     Int         @map("armor_class")
+  initiativeMod  Int         @map("initiative_mod")
+  statblock      Json
+  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  participants InitiativeParticipant[]
+
+  @@index([roomId])
+  @@index([npcTemplateId])
+  @@map("room_temp_npcs")
+}

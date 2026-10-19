@@ -1,0 +1,71 @@
+// Personagens — fichas de PJ e de NPC completo (o NPC "leve", instanciado em
+// quantidade, mora em `npc_templates`). `is_visible_to_master` é o toggle de
+// privacidade: ficha fechada não é lida pelo mestre (regra aplicada no service).
+
+model Character {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerUserId        String    @map("owner_user_id") @db.Uuid
+  name               String
+  level              Int       @default(1)
+  isNpc              Boolean   @default(false) @map("is_npc")
+  isVisibleToMaster  Boolean   @default(true) @map("is_visible_to_master")
+  speciesId          String?   @map("species_id") @db.Uuid
+  species            SrdSpecies? @relation(fields: [speciesId], references: [id], onDelete: SetNull)
+  classId            String    @map("class_id") @db.Uuid
+  srdClass           SrdClass  @relation(fields: [classId], references: [id])
+  subclassId         String?   @map("subclass_id") @db.Uuid
+  subclass           SrdSubclass? @relation(fields: [subclassId], references: [id], onDelete: SetNull)
+  backgroundId       String?   @map("background_id") @db.Uuid
+  background         SrdBackground? @relation(fields: [backgroundId], references: [id], onDelete: SetNull)
+  strength           Int
+  dexterity          Int
+  constitution       Int
+  intelligence       Int
+  wisdom             Int
+  charisma           Int
+  hpMax              Int       @map("hp_max")
+  hpCurrent          Int       @map("hp_current")
+  armorClass         Int       @map("armor_class")
+  initiativeMod      Int       @map("initiative_mod")
+  proficiencyBonus   Int       @map("proficiency_bonus")
+  skillProficiencies Json      @map("skill_proficiencies")
+  preparedSpells     Json?     @map("prepared_spells")
+  equipment          Json
+  feats              Json
+  avatarUrl          String?   @map("avatar_url")
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  owner          user             @relation("OwnedCharacters", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  roomCharacters RoomCharacter[]
+  participants   InitiativeParticipant[]
+
+  @@index([ownerUserId])
+  @@index([classId])
+  @@index([speciesId])
+  @@map("characters")
+}
+
+// Modelo leve de NPC reutilizável: stat block resumido + `statblock` (Json) com
+// o resto (ações, reações, resistências…). `is_public` expõe o template a
+// outros mestres.
+model NpcTemplate {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerUserId    String   @map("owner_user_id") @db.Uuid
+  name           String
+  hpMax          Int      @map("hp_max")
+  hpCurrent      Int      @map("hp_current")
+  armorClass     Int      @map("armor_class")
+  initiativeMod  Int      @map("initiative_mod")
+  statblock      Json
+  isPublic       Boolean  @default(false) @map("is_public")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  owner    user           @relation("OwnedNpcTemplates", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  instances RoomTempNpc[]
+
+  @@index([ownerUserId])
+  @@index([isPublic])
+  @@map("npc_templates")
+}
