@@ -68,7 +68,7 @@ não duplica nada nem falha. Sem os arquivos, o seed do SRD pula com aviso apont
 
 ## Regras de negócio relacionadas
 
-Nenhuma — dado de referência somente leitura, sem decisão de negócio.
+A invariante de leitura está registrada em [`negocio/srd-somente-leitura.md`](../../negocio/srd-somente-leitura.md).
 
 ## Critérios de aceite
 

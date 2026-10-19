@@ -38,4 +38,4 @@ O que ainda não foi decidido.
 
 | Regra | Domínio | Status |
 |---|---|---|
-| _(nenhuma ainda — crie a primeira a partir do formato acima)_ | | |
+| [SRD é somente leitura por construção](./srd-somente-leitura.md) | srd | vigente |
