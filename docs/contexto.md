@@ -65,3 +65,12 @@ design system próprio "Pergaminho" (Tailwind 4). Detalhes e porquês nos ADRs.
 | SRD 5.2 | System Reference Document do D&D 5.5E, conteúdo licenciado CC-BY 4.0 |
 | Desempate oficial | Total → modificador de iniciativa → re-rolagem até desempatar |
 | Passe automático | Vez passa sozinha quando o timer do turno expira |
+
+## Atribuição de conteúdo
+
+Espécies, classes, magias, equipamentos, monstros e demais regras de referência vêm do
+**System Reference Document 5.2** © Wizards of the Coast, licenciado sob
+[CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/). A cópia consumida pelo produto é o
+JSON do repo [5e-bits/5e-database](https://github.com/5e-bits/5e-database) (pasta 2024),
+baixado por `yarn srd:fetch` com commit pinado e importado pelo seeder. A atribuição
+aparece no rodapé da landing.

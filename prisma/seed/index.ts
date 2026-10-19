@@ -1,5 +1,8 @@
+import { access } from 'node:fs/promises'
+import path from 'node:path'
+
 import { prisma } from './prisma'
-import { seedExample } from './seeders/example.seeder'
+import { seedSrd } from './seeders/srd.seeder'
 
 // Orquestrador do seed.
 //
@@ -10,7 +13,15 @@ import { seedExample } from './seeders/example.seeder'
 async function main() {
   console.log('🌱 Iniciando o seed do banco de dados...')
 
-  await seedExample()
+  const srdPresente = await access(path.join('prisma', 'seed', 'srd-data')).then(
+    () => true,
+    () => false,
+  )
+  if (srdPresente) {
+    await seedSrd()
+  } else {
+    console.warn('⚠ prisma/seed/srd-data ausente — SRD não semeado. Rode: yarn srd:fetch')
+  }
 
   console.log('🎉 Seed concluído com sucesso!')
 }
