@@ -21,6 +21,11 @@ projeto adere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   salas, iniciativa, plataforma) com 20 tabelas, 6 enums, CHECK XOR de participante escrito
   à mão na migration e UNIQUE de 1 PJ ativo por sala — detalhes em
   [`docs/db/modelo-de-dados.md`](./docs/db/modelo-de-dados.md).
+- Importação do SRD 5.2 (CC-BY 4.0): `yarn srd:fetch` baixa os 9 JSON do 5e-bits/5e-database
+  pinados por commit; `yarn db:seed` popula as tabelas `srd_*` com upsert idempotente e
+  relatório por tabela (9 espécies, 12 classes, 12 subclasses, 232 features, 4 backgrounds,
+  17 feats, 339 magias, 182 equipamentos, 341 monstros). Serviço de consulta do SRD para o
+  wizard; atribuição no rodapé da landing e em `docs/contexto.md`.
 
 ### Alterado
 

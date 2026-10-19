@@ -28,8 +28,10 @@ uma nem outra — é ADR.
 | 2026-10-19 | P2 · `docs/features/auth/0001-better-auth-email-discord.md` | OAuth do Discord **não exercitado** contra o Discord real (exige app OAuth registrado lá); coberto só por teste de config e render condicional do botão | Registrar o app no Discord, setar `DISCORD_*` no env e correr o fluxo uma vez |
 | 2026-10-19 | P2 · `docs/features/auth/0001-better-auth-email-discord.md` | Reenvio de e-mail de verificação sem UI/endpoint — a tela de link inválido sugere "pedir o reenvio", que não existe | P12: expor `resend-verification-email` do Better Auth num fluxo de reenvio |
 | 2026-10-19 | P3 · `docs/features/db/0001-modelo-de-dados.md` | `updated_at` sem default no banco (é `@updatedAt` client-side): insert cru em SQL falha com not-null — surpreende debug/tooling | Adicionar `DEFAULT now()` nas migrations novas, ou aceitar e documentar no seeder |
-| 2026-10-19 | P3 · `docs/features/db/0001-modelo-de-dados.md` | `example.seeder.ts` segue stub no orquestrador do seed (P2 deixou, P3 manteve) | P4: substituir pelo seeder do SRD e apagar o stub |
 
+
+| 2026-10-19 | P4 · `docs/features/db/0002-importacao-srd-52.md` | Caminho tolerante do seeder (item ruim não derruba os demais) nunca rodou contra arquivo real corrompido — a fonte pinada não tem item ruim | Corromper um JSON de propósito em dev e conferir o relatório |
+| 2026-10-19 | P4 · `docs/features/db/0002-importacao-srd-52.md` | `srd_subclasses.level_gained` sempre NULL: fonte 2024 não traz o nível (regra 5.2 = nível 3 para todas) | P5 assume nível 3 ao filtrar subclasses; ou derivar do payload das features |
 
 ## Becos sem saída
 
