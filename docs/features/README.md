@@ -17,6 +17,7 @@ seu projeto**: remova as que não usar e crie novas conforme precisar.
 | [`seguranca/`](./seguranca/) | Autenticação, autorização (RBAC), proteção de dados, secrets. |
 | [`integracoes/`](./integracoes/) | Serviços externos (SSO, e-mail, provedores de terceiros). |
 | [`dados/`](./dados/) | Relatórios, métricas e analytics (leitura agregada). |
+| [`db/`](./db/) | Modelo de dados transacional: schema Prisma, migrations, seeds, constraints. |
 | [`testes/`](./testes/) | Estratégia e planos de teste (o código de teste fica junto do código). |
 | [`design/`](./design/) | Mudanças de design / UI (o Design System vive no Figma + Tailwind). |
 | [`seo/`](./seo/) | robots.txt, sitemap.xml e otimização para mecanismos de busca. |
