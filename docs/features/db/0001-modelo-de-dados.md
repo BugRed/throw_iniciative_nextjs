@@ -1,6 +1,6 @@
 # Modelo de dados de domínio completo
 
-**Status:** em-desenvolvimento
+**Status:** entregue
 **Responsabilidade:** db
 **Branch:** feature/db-DB01/modelo-de-dados
 **Autor:** ZCode · **Data:** 2026-10-19
@@ -12,16 +12,16 @@
 ## Estado
 
 <!-- kit:camadas -->
-- [ ] prisma — 5 domínios novos em `prisma/schema/` (`srd`, `characters`, `rooms`, `initiative`, `platform`) + `users.deleted_at` + migration com CHECK XOR editado à mão
+- [x] prisma — 5 domínios novos em `prisma/schema/` (`srd`, `characters`, `rooms`, `initiative`, `platform`) + `users.deleted_at` + migration com CHECK XOR editado à mão
 - [x] service — não se aplica nesta feature: P3 não cria `*.service.ts`; privacidade, 1 PJ ativo e state machine viram **constraints** agora e **service** a partir de P5–P8
 - [x] controller — não se aplica nesta feature: sem orquestração, só schema/migration/doc
 - [x] route — não se aplica nesta feature: nenhum endpoint novo
 - [x] ui — não se aplica nesta feature: nenhuma tela tocada
-- [ ] teste — `db:migrate` + `db:seed` 2× seguidos sem falhar no container; constraints rejeitam dados inválidos (XOR, UNIQUEs) na validação local
-- [ ] doc — `docs/db/modelo-de-dados.md` completo (20 tabelas novas, invariantes, diagrama) no mesmo commit do schema
+- [x] teste — `db:migrate` + `db:seed` 2× seguidos sem falhar no container; constraints rejeitam dados inválidos (XOR, UNIQUEs) na validação local
+- [x] doc — `docs/db/modelo-de-dados.md` completo (20 tabelas novas, invariantes, diagrama) no mesmo commit do schema
 <!-- /kit:camadas -->
 
-**Próximo passo:** escrever os 5 arquivos de domínio conforme plano §3, gerar a migration, editar o CHECK XOR (`character_id`/`temp_npc_id`) no SQL e aplicar no container.
+**Próximo passo:** nenhum — feature entregue; próxima fase é P4 (seeder do SRD 5.2), branch `feature/db-DB02/importacao-srd-52` sobre esta.
 
 ## Problema / motivação
 
@@ -91,19 +91,21 @@ plano §3; a state machine da iniciativa nasce em `docs/negocio/` em P8, antes d
 ## Critérios de aceite
 
 <!-- kit:criterios -->
-- [ ] Os 6 arquivos `.prisma` do plano §3 existem e cobrem todas as tabelas (auth entregue em P2; 5 novos).
-- [ ] Enums criados: `room_status`, `member_role`, `initiative_status`, `participant_type`, `added_mode`, `notification_type`.
-- [ ] CHECK XOR (`character_id`/`temp_npc_id`) editado à mão na migration SQL e rejeita inserção inválida na validação no container.
-- [ ] UNIQUEs no lugar: `rooms.code`, `@@unique([room_id, active_for_user_id])`, PK composta de `room_members`; índices `(room_id, created_at)` em `audit_rolls`/`audit_logs`.
-- [ ] `users.deleted_at` existe (nullable) sem quebrar o adapter do Better Auth (login/logout seguem funcionando).
-- [ ] `yarn db:migrate` aplica limpo no container; `yarn db:seed` duas vezes seguidas sem falhar.
-- [ ] `docs/db/modelo-de-dados.md` completo e no mesmo commit do schema.
-- [ ] `example.prisma` removido; `yarn format:check && yarn typecheck && yarn lint && yarn test:cov` verdes (ratchet não desce).
+- [x] Os 6 arquivos `.prisma` do plano §3 existem e cobrem todas as tabelas (auth entregue em P2; 5 novos).
+- [x] Enums criados: `room_status`, `member_role`, `initiative_status`, `participant_type`, `added_mode`, `notification_type`.
+- [x] CHECK XOR (`character_id`/`temp_npc_id`) editado à mão na migration SQL e rejeita inserção inválida na validação no container.
+- [x] UNIQUEs no lugar: `rooms.code`, `@@unique([room_id, active_for_user_id])`, PK composta de `room_members`; índices `(room_id, created_at)` em `audit_rolls`/`audit_logs`.
+- [x] `users.deleted_at` existe (nullable) sem quebrar o adapter do Better Auth (login/logout seguem funcionando).
+- [x] `yarn db:migrate` aplica limpo no container; `yarn db:seed` duas vezes seguidas sem falhar.
+- [x] `docs/db/modelo-de-dados.md` completo e no mesmo commit do schema.
+- [x] `example.prisma` removido; `yarn format:check && yarn typecheck && yarn lint && yarn test:cov` verdes (ratchet não desce).
 <!-- /kit:criterios -->
 
 ## Dívida / não exercitado
 
-Nenhuma até aqui — seção a preencher durante o trabalho e no fechamento.
+- `updated_at` não tem default no banco (é `@updatedAt` client-side do Prisma): inserts crus em SQL — tooling, debug, seeder legado — precisam fornecer a coluna. Notado nos testes de integração manuais.
+- `example.seeder.ts` segue como stub no orquestrador do seed — é substituído pelo seeder real do SRD em P4.
+- Estado `ordered` da state machine existe no enum mas o fluxo atual pula direto rolling→active ao ordenar (decisão de P8; coluna pronta).
 
 ## Decisões em aberto
 

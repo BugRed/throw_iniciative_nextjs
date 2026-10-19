@@ -17,6 +17,10 @@ projeto adere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   obrigatória, reset de senha, sessão em cookie httpOnly e Discord OAuth opcional por
   env; em dev, `/dev/caixa-de-entrada` substitui o provedor de e-mail (links de
   verificação/reset ficam lá).
+- Modelo de dados de domínio completo (P3): 5 arquivos Prisma modulares (SRD, personagens,
+  salas, iniciativa, plataforma) com 20 tabelas, 6 enums, CHECK XOR de participante escrito
+  à mão na migration e UNIQUE de 1 PJ ativo por sala — detalhes em
+  [`docs/db/modelo-de-dados.md`](./docs/db/modelo-de-dados.md).
 
 ### Alterado
 
