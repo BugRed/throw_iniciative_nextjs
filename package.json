@@ -1,0 +1,80 @@
+{
+  "name": "throw-iniciative",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:up": "DOCKER_UID=$(id -u) DOCKER_GID=$(id -g) docker compose -f docker-compose.dev.yml up -d --build",
+    "dev:down": "docker compose -f docker-compose.dev.yml down",
+    "dev:reset": "DOCKER_UID=$(id -u) DOCKER_GID=$(id -g) docker compose -f docker-compose.dev.yml down -v && DOCKER_UID=$(id -u) DOCKER_GID=$(id -g) docker compose -f docker-compose.dev.yml up -d --build",
+    "dev:logs": "docker compose -f docker-compose.dev.yml logs -f app",
+    "db:logs": "docker compose -f docker-compose.dev.yml logs -f postgres",
+    "db:generate": "docker compose -f docker-compose.dev.yml exec app yarn prisma generate",
+    "db:migrate": "docker compose -f docker-compose.dev.yml exec app yarn prisma migrate dev",
+    "db:seed": "docker compose -f docker-compose.dev.yml exec app yarn prisma db seed",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "sonar": "bash sonar/start.sh",
+    "sonar:scan": "bash sonar/scan.sh",
+    "sonar:down": "docker compose -f sonar/docker-compose.yml down -v",
+    "lint": "eslint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.221.0",
+    "@opentelemetry/resources": "^2.10.0",
+    "@opentelemetry/sdk-metrics": "^2.10.0",
+    "@opentelemetry/sdk-node": "^0.221.0",
+    "@opentelemetry/semantic-conventions": "^1.43.0",
+    "@prisma/client": "6.19.2",
+    "better-auth": "^1.7.10",
+    "lucide-react": "^1.25.0",
+    "next": "16.2.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.4",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-boundaries": "^7.2.0",
+    "eslint-plugin-simple-import-sort": "^14.0.0",
+    "eslint-plugin-sonarjs": "^4.2.2",
+    "husky": "^9.1.7",
+    "jsdom": "^29.1.1",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.9.9",
+    "prisma": "6.19.2",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.1",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css}": [
+      "prettier --write"
+    ]
+  }
+}

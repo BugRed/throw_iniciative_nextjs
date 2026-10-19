@@ -1,0 +1,34 @@
+services:
+  app:
+    build:
+      context: .
+      target: runner
+
+    container_name: project-name-app 
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      NODE_ENV: production
+
+    depends_on:
+      - postgres
+  
+  postgres:
+    image: postgres:17-alpine
+
+    container_name: project-name-db
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

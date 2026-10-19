@@ -1,0 +1,15 @@
+.next
+coverage
+node_modules
+yarn.lock
+
+# Markdown e YAML têm convenção própria (docs-as-code, CI) — fora do escopo do
+# Prettier, que aqui cobre só código (TS/JS/JSON/CSS). Ver ADR-0002.
+*.md
+*.yml
+*.yaml
+
+# Kit de processo é gerenciado pelo próprio kit (kit:sync compara os arquivos
+# byte a byte — ADR-0020); o formatador do app não mexe nele.
+.claude
+scripts/kit.mjs

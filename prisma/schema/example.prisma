@@ -1,0 +1,37 @@
+// ┌──────────────────────────────────────────────────────────────────────────┐
+// │ ARQUIVO DE EXEMPLO — modelo de um domínio                                  │
+// │                                                                            │
+// │ Este é o molde de como um domínio deve ser escrito no boilerplate. Copie   │
+// │ este arquivo com o nome do SEU domínio (ex.: `user.prisma`, `order.prisma`)│
+// │ e apague este `example.prisma`. Um arquivo por contexto de negócio.        │
+// │                                                                            │
+// │ Está tudo comentado de propósito: o boilerplate NÃO envia models prontos.  │
+// │ Descomente e adapte ao criar o seu.                                        │
+// │                                                                            │
+// │ Convenções da FH (siga em todos os models):                               │
+// │   • PK `id` UUID gerada no banco (`gen_random_uuid()`).                     │
+// │   • Colunas em snake_case no banco via `@map`; tabela via `@@map` (plural). │
+// │   • Datas em `Timestamptz`: `created_at` (default now) e `updated_at`.      │
+// │   • Enums também recebem `@@map` (nome da tabela/tipo no banco).            │
+// └──────────────────────────────────────────────────────────────────────────┘
+
+// enum ExampleStatus {
+//   active
+//   inactive
+//
+//   @@map("example_statuses")
+// }
+
+// model Example {
+//   id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+//   name      String
+//   status    ExampleStatus @default(active)
+//   createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz
+//   updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+//
+//   // Relações com models de outros arquivos funcionam normalmente:
+//   // owner   Account @relation(fields: [ownerId], references: [id])
+//   // ownerId String  @map("owner_id") @db.Uuid
+//
+//   @@map("examples")
+// }

@@ -1,0 +1,21 @@
+# Donos de código — revisores automáticos por caminho.
+# Os handles abaixo devem ser o **nome de usuário do GitHub** de cada colaborador
+# (com @, ex.: @org-owner) — não o e-mail nem o alias SSH. O CODEOWNERS só
+# funciona quando o repositório está hospedado no GitHub. Ajuste-os por projeto.
+
+# Padrão: qualquer alteração exige revisão de um mantenedor.
+*                       @org-owner @org-maintainer
+
+# Documentação
+/docs/                  @org-owner @org-maintainer
+/README.md              @org-owner @org-maintainer
+/AGENTS.md              @org-owner @org-maintainer
+
+# Banco de dados / modelo
+/prisma/                @org-owner
+/docs/db/               @org-owner
+
+# Infra / deploy / CI
+/.github/               @org-owner
+/Dockerfile*            @org-owner
+/docker-compose*.yml    @org-owner

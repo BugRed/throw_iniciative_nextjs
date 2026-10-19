@@ -1,0 +1,29 @@
+// ┌──────────────────────────────────────────────────────────────────────────┐
+// │ Schema Prisma MODULAR (multi-file)                                         │
+// │                                                                            │
+// │ Este diretório usa o schema em múltiplos arquivos: o Prisma junta TODOS os │
+// │ arquivos `*.prisma` desta pasta em um único schema lógico. A ideia é a     │
+// │ mesma das camadas do boilerplate — cada arquivo tem UMA responsabilidade:  │
+// │                                                                            │
+// │   schema.prisma            → apenas configuração (generator + datasource). │
+// │   <dominio>.prisma          → os models/enums daquele domínio de negócio.  │
+// │                                                                            │
+// │ Regras da abordagem multi-file:                                            │
+// │   • Exatamente UM `generator` e UM `datasource` no conjunto (ficam aqui).  │
+// │   • Relações entre models de arquivos diferentes funcionam normalmente.    │
+// │   • Crie um novo `<dominio>.prisma` para cada contexto novo; não empilhe   │
+// │     models sem relação no mesmo arquivo.                                    │
+// │                                                                            │
+// │ O caminho da pasta é declarado em `prisma.config.ts` (campo `schema`).     │
+// └──────────────────────────────────────────────────────────────────────────┘
+
+generator client {
+  provider      = "prisma-client-js"
+  // Alpine (musl) + OpenSSL 3 — engine compatível com a imagem node:*-alpine.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

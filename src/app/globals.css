@@ -1,0 +1,106 @@
+@import 'tailwindcss';
+
+/*
+ * Design system "Pergaminho" — linguagem visual extraída do site Os Últimos Dias de
+ * Glória (campanha de Forgotten Realms, Salvador-BA): papel envelhecido, tinta escura,
+ * vinho profundo (#990033), ouro velho e painéis de couro escuro com texto dourado.
+ * Nenhuma imagem do site foi copiada — texturas são recriadas em CSS. Referência viva
+ * dos tokens e do catálogo: docs/design/design-system.md.
+ */
+@theme {
+  /* papel */
+  --color-paper-50: #fbfaf0;
+  --color-paper-100: #f7f5ea;
+  --color-paper-200: #edebe5;
+  --color-paper-300: #e8e6e0;
+  --color-paper-400: #e8d9a8; /* borda envelhecida clara */
+  --color-paper-500: #d8c48a; /* borda envelhecida profunda */
+
+  /* tinta */
+  --color-ink-900: #1a1611;
+  --color-ink-700: #44403a;
+  --color-ink-500: #6b5d4f;
+  --color-ink-400: #333333; /* links do site de referência */
+
+  /* vinho — cor-assinatura */
+  --color-wine-400: #b3123f;
+  --color-wine-500: #990033;
+  --color-wine-600: #7a0029;
+  --color-rubric-600: #990000; /* rúbrica: título de matéria */
+
+  /* ouro velho */
+  --color-gold-300: #e5c96b; /* texto sobre couro */
+  --color-gold-400: #cc9900;
+  --color-gold-500: #c9a227; /* molduras e ornamentos */
+  --color-gold-700: #8b6914;
+  --color-gold-800: #6c4900;
+
+  /* couro escuro — painéis de destaque (menu/banner do site de referência) */
+  --color-leather-600: #5c4322;
+  --color-leather-700: #3e2a10;
+  --color-leather-800: #2a1f14;
+
+  /* apoio */
+  --color-moss-600: #006600; /* sucesso (verde-erva do site) */
+  --color-fire-500: #c8742e; /* alerta / fim de timer */
+  --color-fire-600: #a85d1f;
+  --color-suede-500: #895e36; /* crédito / rodapé */
+  --color-ash-400: #9c948a; /* finalizado / inativo */
+
+  /* tipografia */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-lora), Georgia, 'Book Antiqua', serif;
+  --font-display: var(--font-cinzel), var(--font-lora), serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* movimento — estados de turno chegam com o QueueView (P9) */
+  --animate-pulse-vez: pulse-da-vez 1.5s ease-in-out infinite;
+  --animate-toast-entra: toast-entra 0.2s ease-out;
+
+  @keyframes pulse-da-vez {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(201, 162, 39, 0.55);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgba(201, 162, 39, 0);
+    }
+  }
+
+  @keyframes toast-entra {
+    from {
+      transform: translateY(12px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+/*
+ * Superfície de pergaminho: manchas suaves + ruído fino, tudo em CSS. O template
+ * trazia um dark-mode automático por prefers-color-scheme — removido de propósito:
+ * o Pergaminho é tema claro por identidade (painéis escuros são superfícies locais).
+ */
+body {
+  background-color: var(--color-paper-100);
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% 0%, rgba(232, 217, 168, 0.35), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 100% 100%, rgba(216, 196, 138, 0.28), transparent 55%),
+    radial-gradient(ellipse 45% 40% at 0% 85%, rgba(232, 230, 224, 0.55), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  color: var(--color-ink-900);
+  font-family: var(--font-serif);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

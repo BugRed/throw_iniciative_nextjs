@@ -1,0 +1,117 @@
+services:
+  app:
+    build:
+      context: .
+      target: development
+
+    container_name: project-name-app-dev
+
+    # Roda o container com o UID/GID do host (injetados pelos scripts dev:up /
+    # dev:reset). Assim os arquivos gerados no bind-mount — como o .next —
+    # nascem com o dono do usuário local, e não como root. Isso deixa os fluxos
+    # Docker e `yarn dev` local conviverem sem conflito de permissão.
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - .:/app
+      # Volume anônimo: mantém o node_modules do container isolado do host
+      # (evita misturar binários nativos musl/glibc). O .next NÃO é isolado
+      # de propósito — como o container roda com o UID do host, ele escreve o
+      # .next direto no bind-mount sem virar root, e o `yarn dev` local reaproveita.
+      - /app/node_modules
+
+    environment:
+      NODE_ENV: development
+      # Usuário arbitrário não tem home no container; aponta caches (yarn, etc)
+      # para um diretório sempre gravável.
+      HOME: /tmp
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      storage-setup:
+        condition: service_completed_successfully
+
+  postgres:
+    image: postgres:17-alpine
+
+    container_name: project-name-db-dev
+
+    ports:
+      - "5432:5432"
+
+    environment:
+      POSTGRES_DB: app_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    # Deixa o app subir só quando o banco aceita conexão — evita "connection
+    # refused" ao rodar db:migrate logo após o dev:up.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Object storage S3-compatible para dev local. Ver ADR-0009 para o porquê
+  # de ser SeaweedFS e não MinIO.
+  storage:
+    image: chrislusf/seaweedfs:4.48
+
+    container_name: project-name-storage-dev
+
+    # Um único binário sobe master, volume, filer e o gateway S3 juntos —
+    # dispensa orquestrar processo extra só para rodar `yarn dev`.
+    command: server -dir=/data -s3 -s3.port=9000 -s3.config=/etc/seaweedfs/s3.json
+
+    # Portas 9003/9004 (não 9000/8888): o SonarQube local (sonar/docker-compose.yml)
+    # já publica :9000 — evita colisão quando os dois sobem juntos.
+    ports:
+      - "9003:9000" # API S3 — mesmo endpoint que S3_ENDPOINT aponta no .env
+      - "9004:8888" # Filer UI — navegador de arquivos para conferir uploads
+
+    volumes:
+      - storage_data:/data
+      - ./docker/storage/s3.json:/etc/seaweedfs/s3.json:ro
+
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Cria o bucket uma vez e sai — não é um serviço de longa duração. O nome do
+  # bucket é fixo aqui (não vem do .env) pelo mesmo motivo do POSTGRES_DB
+  # acima: compose não lê .env.local, então mudar o bucket exige editar os
+  # dois lugares (aqui e o S3_BUCKET do .env.local).
+  storage-setup:
+    image: chrislusf/seaweedfs:4.48
+
+    container_name: project-name-storage-setup-dev
+
+    depends_on:
+      storage:
+        condition: service_healthy
+
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      # Idempotente: o volume storage_data persiste entre dev:up/dev:down, então
+      # criar um bucket que já existe é o caso comum, não o erro.
+      - |
+        if echo 's3.bucket.list' | weed shell -master=storage:9333 | grep -qw app-bucket; then
+          echo 'bucket app-bucket já existe — nada a fazer'
+        else
+          echo 's3.bucket.create -name=app-bucket' | weed shell -master=storage:9333
+        fi
+
+    restart: "no"
+
+volumes:
+  postgres_data:
+  storage_data:

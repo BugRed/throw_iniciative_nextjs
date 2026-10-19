@@ -1,0 +1,220 @@
+name: Deploy Next.js to Production
+
+on:
+  push:
+    branches: [main]
+
+env:
+  DEPLOY_PATH: "/path/to/deploy/project-name"
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Format check
+        run: yarn format:check
+
+      - name: Type check
+        run: yarn typecheck
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Tests
+        run: yarn test
+
+  build-app:
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      # Tag por SHA além de :latest: permite kubectl set image (rollback real
+      # via `kubectl rollout undo`) em vez de depender de :latest (mutável) +
+      # rollout restart, que não troca versão de fato e gera imagens dangling
+      # a cada deploy. Ver docs/GUIA_VERSIONAMENTO_IMAGENS.md no repo de
+      # provisionamento de infra do projeto.
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/project-name:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/project-name:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Gate: reprova o job em HIGH/CRITICAL (ver ADR-0010). Roda sobre a tag
+      # de SHA já publicada, não sobre a imagem local — não exige --load no
+      # step acima.
+      - name: Scan image for vulnerabilities (Trivy)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ secrets.DOCKER_HUB_USERNAME }}/project-name:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true
+
+  build-prisma:
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      # Imagem dedicada de migrations/seed (Dockerfile.prisma). Precisa ser
+      # reconstruída a cada mudança de schema/migrations — senão o job roda
+      # com migrations antigas.
+      # Também versionada por SHA (mesma razão da imagem do app): sem isso, o
+      # ":prisma" mutável gera uma imagem dangling a cada deploy.
+      - name: Build and push Prisma image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.prisma
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/project-name:prisma
+            ${{ secrets.DOCKER_HUB_USERNAME }}/project-name:prisma-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Scan image for vulnerabilities (Trivy)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ secrets.DOCKER_HUB_USERNAME }}/project-name:prisma-${{ github.sha }}
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true
+
+  migrate:
+    needs: build-prisma
+    runs-on: ubuntu-latest
+    steps:
+      # Gate: migrations aplicadas ANTES do rollout. Se falhar, o app novo
+      # não sobe. O manifesto do Job referencia ":prisma" (fixo); substituímos
+      # pela tag de SHA na hora de aplicar (sem tocar no arquivo gerenciado
+      # pelo Ansible/infra), assim o Job roda a imagem exata deste commit.
+      - name: DB migrate (Prisma Job) on K3s
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+            KUBECTL=/usr/local/bin/kubectl
+            IMAGE_TAG="${{ github.sha }}"
+            PRISMA_IMAGE="${{ secrets.DOCKER_HUB_USERNAME }}/project-name:prisma-$IMAGE_TAG"
+
+            echo "🗃️  Aplicando migrations (Prisma Job) com $PRISMA_IMAGE..."
+            $KUBECTL -n apps delete job prisma-seed-job-v1 --ignore-not-found --wait=true
+            sed "s#${{ secrets.DOCKER_HUB_USERNAME }}/project-name:prisma#$PRISMA_IMAGE#" \
+              ${{ env.DEPLOY_PATH }}/manifests/apps/prisma-job.yaml | $KUBECTL -n apps apply -f -
+            if ! $KUBECTL -n apps wait --for=condition=complete job/prisma-seed-job-v1 --timeout=300s; then
+              echo "❌ Migration falhou — últimos logs:"
+              $KUBECTL -n apps logs job/prisma-seed-job-v1 --tail=200 || true
+              exit 1
+            fi
+            echo "✅ Migrations aplicadas."
+
+            # Histórico + poda da imagem de migration (mesma lógica do app:
+            # mantém atual + 2 anteriores). Ver docs/GUIA_VERSIONAMENTO_IMAGENS.md
+            # no repo de provisionamento de infra do projeto.
+            HISTORY_FILE="$HOME/.project-name-prisma-image-history"
+            touch "$HISTORY_FILE"
+            echo "$IMAGE_TAG" >> "$HISTORY_FILE"
+            tail -n 3 "$HISTORY_FILE" > "$HISTORY_FILE.tmp" && mv "$HISTORY_FILE.tmp" "$HISTORY_FILE"
+
+            sudo k3s crictl images --filter "reference=${{ secrets.DOCKER_HUB_USERNAME }}/project-name" \
+              | awk 'NR>1 {print $2}' \
+              | grep -E '^prisma-[0-9a-f]{40}$' \
+              | sed 's/^prisma-//' \
+              | sort -u \
+              | while read -r tag; do
+                  if ! grep -qx "$tag" "$HISTORY_FILE"; then
+                    echo "  removendo imagem antiga: project-name:prisma-$tag"
+                    sudo k3s crictl rmi "docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/project-name:prisma-$tag" || true
+                  fi
+                done
+
+  rollout:
+    needs: [build-app, migrate]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rollout on K3s
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+            KUBECTL=/usr/local/bin/kubectl
+            IMAGE_TAG="${{ github.sha }}"
+            IMAGE="${{ secrets.DOCKER_HUB_USERNAME }}/project-name:$IMAGE_TAG"
+
+            echo "🚀 Apontando Deployment para $IMAGE..."
+            $KUBECTL -n apps set image deployment/nextjs nextjs="$IMAGE"
+            echo "📊 Aguardando estabilização..."
+            $KUBECTL -n apps rollout status deployment nextjs --timeout=120s
+            echo "✅ Deploy Concluído!"
+
+            # Mantém histórico das últimas 3 tags (atual + 2 anteriores) para
+            # rollback rápido (`kubectl rollout undo`) e poda do resto no node
+            # — evita acumular imagens dangling. Ver
+            # docs/GUIA_VERSIONAMENTO_IMAGENS.md no repo de provisionamento de
+            # infra do projeto.
+            echo "🧹 Atualizando histórico de imagens (mantém atual + 2 anteriores)..."
+            HISTORY_FILE="$HOME/.project-name-image-history"
+            touch "$HISTORY_FILE"
+            echo "$IMAGE_TAG" >> "$HISTORY_FILE"
+            tail -n 3 "$HISTORY_FILE" > "$HISTORY_FILE.tmp" && mv "$HISTORY_FILE.tmp" "$HISTORY_FILE"
+
+            sudo k3s crictl images --filter "reference=${{ secrets.DOCKER_HUB_USERNAME }}/project-name" \
+              | awk 'NR>1 {print $2}' \
+              | grep -E '^[0-9a-f]{40}$' \
+              | sort -u \
+              | while read -r tag; do
+                  if ! grep -qx "$tag" "$HISTORY_FILE"; then
+                    echo "  removendo imagem antiga: project-name:$tag"
+                    sudo k3s crictl rmi "docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/project-name:$tag" || true
+                  fi
+                done
+            echo "✅ Limpeza concluída."
