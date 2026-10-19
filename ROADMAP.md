@@ -11,7 +11,7 @@ Legenda: ✅ entregue · 🚧 em andamento · ⏳ na fila · 💡 pós-MVP
 |---|---|---|
 | P0 | Fundação: boilerplate + kit fundidos, rename, gates | ✅ |
 | P1 | Design system Pergaminho (tokens, fontes, componentes base) | ✅ |
-| P2 | Better Auth: e-mail/senha + verificação + Discord opcional | ⏳ |
+| P2 | Better Auth: e-mail/senha + verificação + Discord opcional | ✅ |
 | P3 | Schema Prisma de domínio completo | ⏳ |
 | P4 | Importação do SRD 5.2 (CC-BY) | ⏳ |
 | P5 | CRUD de personagem (wizard de criação) | ⏳ |
