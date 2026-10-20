@@ -51,6 +51,70 @@ export async function listarSubclassesPorClasse(srdClassId: string): Promise<Srd
   })
 }
 
+// Todas as subclasses com a classe delas — o wizard agrupa client-side para
+// mostrar as opções futuras da classe escolhida.
+export async function listarSubclasses(): Promise<
+  Array<SrdSubclassResumo & { classeSlug: string }>
+> {
+  const subclasses = await prisma.srdSubclass.findMany({
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      levelGained: true,
+      srdClass: { select: { slug: true } },
+    },
+    orderBy: { name: 'asc' },
+  })
+  return subclasses.map((s) => ({
+    id: s.id,
+    slug: s.slug,
+    name: s.name,
+    levelGained: s.levelGained,
+    classeSlug: s.srdClass.slug,
+  }))
+}
+
+type PayloadClasseWizard = {
+  spellcasting?: unknown
+  proficiency_choices?: Array<{
+    choose?: number
+    from?: { options?: Array<{ item?: { name?: string; index?: string } }> }
+  }>
+}
+
+// Classe no shape que o wizard de criação consome: se conjura e quais perícias
+// pode escolher, lidos do payload do SRD ("Skill: Acrobatics" → "Acrobatics").
+export type SrdClasseWizard = {
+  slug: string
+  name: string
+  hitDie: number
+  caster: boolean
+  pericias: { escolher: number; opcoes: Array<{ slug: string; name: string }> }
+}
+
+export async function listarClassesParaWizard(): Promise<SrdClasseWizard[]> {
+  const classes = await prisma.srdClass.findMany({
+    select: { slug: true, name: true, hitDie: true, payload: true },
+    orderBy: { name: 'asc' },
+  })
+  return classes.map((classe) => {
+    const payload = (classe.payload ?? {}) as PayloadClasseWizard
+    const escolha = payload.proficiency_choices?.[0]
+    const opcoes = (escolha?.from?.options ?? [])
+      .map((o) => o.item)
+      .filter((i): i is { name: string; index: string } => Boolean(i?.name && i?.index))
+      .map((i) => ({ slug: i.index.replace(/^skill-/, ''), name: i.name.replace(/^Skill: /, '') }))
+    return {
+      slug: classe.slug,
+      name: classe.name,
+      hitDie: classe.hitDie,
+      caster: payload.spellcasting !== undefined,
+      pericias: { escolher: escolha?.choose ?? 2, opcoes },
+    }
+  })
+}
+
 export async function listarBackgrounds(): Promise<SrdItemResumo[]> {
   return prisma.srdBackground.findMany({
     select: { id: true, slug: true, name: true },

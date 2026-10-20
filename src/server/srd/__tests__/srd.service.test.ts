@@ -23,11 +23,13 @@ import {
   buscarFeatPorSlug,
   listarBackgrounds,
   listarClasses,
+  listarClassesParaWizard,
   listarEquipamentos,
   listarEspecies,
   listarFeats,
   listarMagias,
   listarMonstros,
+  listarSubclasses,
   listarSubclassesPorClasse,
 } from '@/server/srd/srd.service'
 
@@ -164,5 +166,99 @@ describe('Listas de apoio e busca por slug', () => {
       select: { id: true, slug: true, name: true },
       orderBy: { name: 'asc' },
     })
+  })
+})
+
+describe('Subclasses para o wizard', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('lista todas as subclasses com o slug da classe para agrupar no wizard', async () => {
+    prismaMock.srdSubclass.findMany.mockResolvedValue([
+      {
+        id: '1',
+        slug: 'champion',
+        name: 'Champion',
+        levelGained: 3,
+        srdClass: { slug: 'fighter' },
+      },
+    ])
+
+    const subclasses = await listarSubclasses()
+
+    expect(subclasses[0]).toMatchObject({ slug: 'champion', classeSlug: 'fighter' })
+    expect(prismaMock.srdSubclass.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({ srdClass: { select: { slug: true } } }),
+      }),
+    )
+  })
+})
+
+const CLASSE_FIGHTER_ESPERADA = {
+  slug: 'fighter',
+  name: 'Fighter',
+  hitDie: 10,
+  caster: false,
+  pericias: {
+    escolher: 2,
+    opcoes: [
+      { slug: 'acrobatics', name: 'Acrobatics' },
+      { slug: 'athletics', name: 'Athletics' },
+    ],
+  },
+}
+
+describe('Classes para o wizard de criação', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  const PAYLOAD_FIGHTER = {
+    proficiency_choices: [
+      {
+        choose: 2,
+        from: {
+          options: [
+            { item: { name: 'Skill: Acrobatics', index: 'skill-acrobatics' } },
+            { item: { name: 'Skill: Athletics', index: 'skill-athletics' } },
+          ],
+        },
+      },
+    ],
+  }
+
+  it('deve limpar as perícias do payload ("Skill: Acrobatics" → "Acrobatics")', async () => {
+    prismaMock.srdClass.findMany.mockResolvedValue([
+      { slug: 'fighter', name: 'Fighter', hitDie: 10, payload: PAYLOAD_FIGHTER },
+    ])
+
+    const classes = await listarClassesParaWizard()
+
+    expect(classes[0]).toEqual(CLASSE_FIGHTER_ESPERADA)
+    expect(prismaMock.srdClass.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ select: expect.objectContaining({ payload: true }) }),
+    )
+  })
+
+  it('deve marcar como caster a classe com spellcasting no payload', async () => {
+    prismaMock.srdClass.findMany.mockResolvedValue([
+      { slug: 'wizard', name: 'Wizard', hitDie: 6, payload: { spellcasting: { level: 1 } } },
+    ])
+
+    const classes = await listarClassesParaWizard()
+
+    expect(classes[0]?.caster).toBe(true)
+  })
+
+  it('deve tolerar payload nulo com padrão de 2 perícias e sem caster', async () => {
+    prismaMock.srdClass.findMany.mockResolvedValue([
+      { slug: 'npc', name: 'NPC', hitDie: 8, payload: null },
+    ])
+
+    const classes = await listarClassesParaWizard()
+
+    expect(classes[0]).toMatchObject({ caster: false, pericias: { escolher: 2, opcoes: [] } })
   })
 })
