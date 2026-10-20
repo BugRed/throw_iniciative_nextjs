@@ -12,6 +12,7 @@
     "db:generate": "docker compose -f docker-compose.dev.yml exec app yarn prisma generate",
     "db:migrate": "docker compose -f docker-compose.dev.yml exec app yarn prisma migrate dev",
     "db:seed": "docker compose -f docker-compose.dev.yml exec app yarn prisma db seed",
+    "srd:fetch": "node scripts/fetch-srd.mjs",
     "build": "next build",
     "start": "next start",
     "test": "vitest run",

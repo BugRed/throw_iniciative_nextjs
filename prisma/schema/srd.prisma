@@ -1,0 +1,137 @@
+// SRD 5.2 — dados de referência do System Reference Document do D&D 5.5E (CC-BY 4.0).
+// Somente leitura por construção: nenhum service escreve aqui — só o seeder (P4).
+// Cada tabela guarda os campos que o produto consulta/filtra soltos (slug, level,
+// hit_die…) e o objeto completo em `payload` (Json) — o seeder não normaliza o
+// SRD inteiro, normaliza o que a UI precisa.
+
+model SrdSpecies {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug      String   @unique
+  name      String
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  characters Character[]
+
+  @@map("srd_species")
+}
+
+model SrdClass {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug      String   @unique
+  name      String
+  hitDie    Int      @map("hit_die")
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  subclasses      SrdSubclass[]
+  classFeatures   SrdClassFeature[]
+  characters      Character[]
+
+  @@map("srd_classes")
+}
+
+model SrdSubclass {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug         String    @unique
+  name         String
+  levelGained  Int?      @map("level_gained")
+  payload      Json
+  srdClassId   String    @map("srd_class_id") @db.Uuid
+  srdClass     SrdClass  @relation(fields: [srdClassId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  classFeatures SrdClassFeature[]
+  characters    Character[]
+
+  @@index([srdClassId])
+  @@map("srd_subclasses")
+}
+
+model SrdClassFeature {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug          String        @unique
+  name          String
+  level         Int
+  payload       Json
+  srdClassId    String        @map("srd_class_id") @db.Uuid
+  srdClass      SrdClass      @relation(fields: [srdClassId], references: [id], onDelete: Cascade)
+  srdSubclassId String?       @map("srd_subclass_id") @db.Uuid
+  srdSubclass   SrdSubclass?  @relation(fields: [srdSubclassId], references: [id], onDelete: SetNull)
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([srdClassId])
+  @@index([srdSubclassId])
+  @@map("srd_class_features")
+}
+
+model SrdBackground {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug      String   @unique
+  name      String
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  characters Character[]
+
+  @@map("srd_backgrounds")
+}
+
+model SrdFeat {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug      String   @unique
+  name      String
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("srd_feats")
+}
+
+model SrdSpell {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug      String   @unique
+  name      String
+  level     Int
+  school    String
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([level])
+  @@index([school])
+  @@map("srd_spells")
+}
+
+model SrdEquipment {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug      String   @unique
+  name      String
+  category  String
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([category])
+  @@map("srd_equipment")
+}
+
+model SrdMonster {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug            String   @unique
+  name            String
+  challengeRating Float?   @map("challenge_rating")
+  type            String?
+  payload         Json
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([challengeRating])
+  @@index([type])
+  @@map("srd_monsters")
+}

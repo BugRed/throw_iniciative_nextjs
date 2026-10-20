@@ -27,7 +27,14 @@ uma nem outra — é ADR.
 | 2026-10-18 | P1 · `docs/features/ui/0001-design-system-pergaminho.md` | Átomos Select/Textarea/Checkbox/StatPil sem consumidor real ainda (formulários chegam na P2/P5) — cobertos só por teste de renderização | Exercitar em página real quando as fases consumidoras chegarem |
 | 2026-10-19 | P2 · `docs/features/auth/0001-better-auth-email-discord.md` | OAuth do Discord **não exercitado** contra o Discord real (exige app OAuth registrado lá); coberto só por teste de config e render condicional do botão | Registrar o app no Discord, setar `DISCORD_*` no env e correr o fluxo uma vez |
 | 2026-10-19 | P2 · `docs/features/auth/0001-better-auth-email-discord.md` | Reenvio de e-mail de verificação sem UI/endpoint — a tela de link inválido sugere "pedir o reenvio", que não existe | P12: expor `resend-verification-email` do Better Auth num fluxo de reenvio |
+| 2026-10-19 | P3 · `docs/features/db/0001-modelo-de-dados.md` | `updated_at` sem default no banco (é `@updatedAt` client-side): insert cru em SQL falha com not-null — surpreende debug/tooling | Adicionar `DEFAULT now()` nas migrations novas, ou aceitar e documentar no seeder |
 
+
+| 2026-10-19 | P4 · `docs/features/db/0002-importacao-srd-52.md` | Caminho tolerante do seeder (item ruim não derruba os demais) nunca rodou contra arquivo real corrompido — a fonte pinada não tem item ruim | Corromper um JSON de propósito em dev e conferir o relatório |
+| 2026-10-19 | P4 · `docs/features/db/0002-importacao-srd-52.md` | `srd_subclasses.level_gained` sempre NULL: fonte 2024 não traz o nível (regra 5.2 = nível 3 para todas) | P5 assume nível 3 ao filtrar subclasses; ou derivar do payload das features |
+| 2026-10-20 | P5 · `docs/features/ui/0002-crud-personagem.md` | CRUD de personagem **não exercitado contra o app rodando**: 204 testes, todos com Prisma/controller/actions dublês — nenhuma ficha foi criada pelo dev server com SRD semeado | `yarn dev:Up` + criar um Fighter CON 12 no wizard e conferir HP 11 na ficha |
+| 2026-10-20 | P5 · `docs/features/ui/0002-crud-personagem.md` | Ramo `notFound()` da página `/characters/[id]` sem teste direto (o 404 em si é coberto no service; a página só testa caminhos felizes) | Dublê de `next/navigation` com `notFound` jogando + teste do 404 renderizado |
+| 2026-10-20 | P5 · `docs/features/ui/0002-crud-personagem.md` | `alternarVisibilidade` não grava audit (só `character_created`/`character_updated` existem, como os critérios pediam) | Se a sala (P7) precisar rastrear abertura/fechamento de ficha, nasce `character_visibility_changed` |
 
 ## Becos sem saída
 

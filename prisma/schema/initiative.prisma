@@ -1,0 +1,79 @@
+// Iniciativa — o combate de uma sala. A state machine
+// (draft → rolling → ordered → active → finished) é regra de negócio
+// autoritativa do server; o enum aqui só materializa os estados. A pausa do
+// timer vive em Room.isPaused (liga/desliga) + Initiative.pausedAt (quando
+// congelou, para a retomada reajustar turn_started_at e preservar o restante).
+
+enum InitiativeStatus {
+  draft
+  rolling
+  ordered
+  active
+  finished
+
+  @@map("initiative_status")
+}
+
+enum ParticipantType {
+  character
+  temp_npc
+
+  @@map("participant_type")
+}
+
+enum AddedMode {
+  roll
+  append
+
+  @@map("added_mode")
+}
+
+model Initiative {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId         String           @map("room_id") @db.Uuid
+  room           Room             @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  status         InitiativeStatus @default(draft)
+  currentPosition Int             @default(0) @map("current_position")
+  turnStartedAt  DateTime?        @map("turn_started_at") @db.Timestamptz(6)
+  pausedAt       DateTime?        @map("paused_at") @db.Timestamptz(6)
+  startedAt      DateTime?        @map("started_at") @db.Timestamptz(6)
+  finishedAt     DateTime?        @map("finished_at") @db.Timestamptz(6)
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  participants InitiativeParticipant[]
+
+  @@index([roomId, status])
+  @@map("initiatives")
+}
+
+// Participante de um combate: character XOR temp_npc — o CHECK que garante
+// exatamente um dos dois é adicionado à mão na migration SQL (Prisma não tem
+// CHECK nativo). `rollResult` guarda o TOTAL (d20 + mod) e `initiativeMod`
+// congela o modificador no momento da rolagem — o desempate oficial
+// (total → mod → reroll) precisa dos dois.
+model InitiativeParticipant {
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  initiativeId      String         @map("initiative_id") @db.Uuid
+  initiative        Initiative     @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
+  participantType   ParticipantType @map("participant_type")
+  characterId       String?        @map("character_id") @db.Uuid
+  character         Character?     @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  tempNpcId         String?        @map("temp_npc_id") @db.Uuid
+  tempNpc           RoomTempNpc?   @relation(fields: [tempNpcId], references: [id], onDelete: Cascade)
+  label             String
+  userIdResponsible String?        @map("user_id_responsible") @db.Uuid
+  userResponsible   user?          @relation("ResponsibleParticipants", fields: [userIdResponsible], references: [id], onDelete: SetNull)
+  initiativeMod     Int            @default(0) @map("initiative_mod")
+  rollResult        Int?           @map("roll_result")
+  position          Int?
+  hasRolled         Boolean        @default(false) @map("has_rolled")
+  hasPlayed         Boolean        @default(false) @map("has_played")
+  addedMode         AddedMode      @default(roll) @map("added_mode")
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([initiativeId])
+  @@index([characterId])
+  @@index([tempNpcId])
+  @@map("initiative_participants")
+}

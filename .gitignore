@@ -50,3 +50,6 @@ fh-kit-estado/
 
 # artefatos locais de ferramentas
 .zcode/
+
+# SRD 5.2 (CC-BY 4.0) baixado por yarn srd:fetch — não versionado
+prisma/seed/srd-data/

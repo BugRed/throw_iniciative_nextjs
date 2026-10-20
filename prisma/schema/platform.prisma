@@ -1,0 +1,68 @@
+// Plataforma — notificações por usuário e auditoria por sala. As tabelas de
+// auditoria levam índice (room_id, created_at) porque a timeline de auditoria
+// (P12) lê a sala em ordem cronológica.
+
+enum NotificationType {
+  your_turn
+  you_are_next
+  timer_warning
+  room_destroyed
+  member_joined
+
+  @@map("notification_type")
+}
+
+model Notification {
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  user      user             @relation("Notifications", fields: [userId], references: [id], onDelete: Cascade)
+  roomId    String?          @map("room_id") @db.Uuid
+  room      Room?            @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  payload   Json?
+  readAt    DateTime?        @map("read_at") @db.Timestamptz(6)
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([userId, createdAt])
+  @@index([roomId])
+  @@map("notifications")
+}
+
+// Cada rolagem de dado autoritativa (d20 de iniciativa etc.) vira uma linha —
+// resultado bruto, modificador e total, para auditoria posterior.
+model AuditRoll {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId      String   @map("room_id") @db.Uuid
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId      String?  @map("user_id") @db.Uuid
+  user        user?    @relation("AuditRolls", fields: [userId], references: [id], onDelete: SetNull)
+  characterId String?  @map("character_id") @db.Uuid
+  diceType    String   @default("d20") @map("dice_type")
+  result      Int
+  modifier    Int      @default(0)
+  total       Int
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([roomId, createdAt])
+  @@index([userId])
+  @@map("audit_rolls")
+}
+
+// Eventos de domínio auditáveis (criação de ficha, template, sala, exclusão…).
+// Sobrevive à exclusão do usuário (user_id vira NULL) — auditoria não apaga.
+model AuditLog {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId    String?  @map("room_id") @db.Uuid
+  room      Room?    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId    String?  @map("user_id") @db.Uuid
+  user      user?    @relation("AuditLogs", fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entityId  String?  @map("entity_id") @db.Uuid
+  payload   Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([roomId, createdAt])
+  @@index([userId])
+  @@index([action])
+  @@map("audit_logs")
+}
