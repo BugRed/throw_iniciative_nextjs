@@ -32,6 +32,9 @@ uma nem outra — é ADR.
 
 | 2026-10-19 | P4 · `docs/features/db/0002-importacao-srd-52.md` | Caminho tolerante do seeder (item ruim não derruba os demais) nunca rodou contra arquivo real corrompido — a fonte pinada não tem item ruim | Corromper um JSON de propósito em dev e conferir o relatório |
 | 2026-10-19 | P4 · `docs/features/db/0002-importacao-srd-52.md` | `srd_subclasses.level_gained` sempre NULL: fonte 2024 não traz o nível (regra 5.2 = nível 3 para todas) | P5 assume nível 3 ao filtrar subclasses; ou derivar do payload das features |
+| 2026-10-20 | P5 · `docs/features/ui/0002-crud-personagem.md` | CRUD de personagem **não exercitado contra o app rodando**: 204 testes, todos com Prisma/controller/actions dublês — nenhuma ficha foi criada pelo dev server com SRD semeado | `yarn dev:Up` + criar um Fighter CON 12 no wizard e conferir HP 11 na ficha |
+| 2026-10-20 | P5 · `docs/features/ui/0002-crud-personagem.md` | Ramo `notFound()` da página `/characters/[id]` sem teste direto (o 404 em si é coberto no service; a página só testa caminhos felizes) | Dublê de `next/navigation` com `notFound` jogando + teste do 404 renderizado |
+| 2026-10-20 | P5 · `docs/features/ui/0002-crud-personagem.md` | `alternarVisibilidade` não grava audit (só `character_created`/`character_updated` existem, como os critérios pediam) | Se a sala (P7) precisar rastrear abertura/fechamento de ficha, nasce `character_visibility_changed` |
 
 ## Becos sem saída
 
