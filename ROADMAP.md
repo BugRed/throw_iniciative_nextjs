@@ -14,7 +14,7 @@ Legenda: ✅ entregue · 🚧 em andamento · ⏳ na fila · 💡 pós-MVP
 | P2 | Better Auth: e-mail/senha + verificação + Discord opcional | ✅ |
 | P3 | Schema Prisma de domínio completo | ✅ |
 | P4 | Importação do SRD 5.2 (CC-BY) | ✅ |
-| P5 | CRUD de personagem (wizard de criação) | ⏳ |
+| P5 | CRUD de personagem (wizard de criação) | ✅ |
 | P6 | NPCs: templates leves + NPC completo | ⏳ |
 | P7 | Salas, membership e tempo real (SSE) | ⏳ |
 | P8 | Núcleo de iniciativa (state machine + dado server-side) | ⏳ |
