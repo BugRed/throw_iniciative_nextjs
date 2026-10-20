@@ -2,6 +2,7 @@ import { access } from 'node:fs/promises'
 import path from 'node:path'
 
 import { prisma } from './prisma'
+import { seedDemo } from './seeders/demo.seeder'
 import { seedSrd } from './seeders/srd.seeder'
 
 // Orquestrador do seed.
@@ -9,8 +10,18 @@ import { seedSrd } from './seeders/srd.seeder'
 // Padrão modular: cada domínio tem o seu arquivo em `seeders/`, e aqui a gente
 // só decide a ORDEM de execução (importante quando um seeder depende de outro).
 // Ao criar um seeder novo, importe-o acima e chame-o dentro de `main()`.
+//
+// `--demo` roda apenas o elenco de demonstração (os usuários precisam existir —
+// o seed não cria conta, que é fluxo de auth); o seed padrão fica só com o SRD.
+
+const apenasDemo = process.argv.includes('--demo')
 
 async function main() {
+  if (apenasDemo) {
+    await seedDemo()
+    return
+  }
+
   console.log('🌱 Iniciando o seed do banco de dados...')
 
   const srdPresente = await access(path.join('prisma', 'seed', 'srd-data')).then(
