@@ -11,6 +11,10 @@ export const TIPOS_EVENTO_SALA = [
   'npc:removed',
   'master:transferred',
   'room:destroyed',
+  'room:paused',
+  'room:resumed',
+  'initiative:changed',
+  'notification:new',
 ] as const
 
 export type TipoEventoSala = (typeof TIPOS_EVENTO_SALA)[number]
