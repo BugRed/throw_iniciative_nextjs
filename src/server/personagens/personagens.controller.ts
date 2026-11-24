@@ -1,5 +1,4 @@
-import { getSession } from '@/server/auth/session'
-import { AppError } from '@/server/http/errors'
+import { exigirUserId } from '@/server/auth/session'
 import {
   alternarVisibilidade,
   atualizarPersonagem,
@@ -21,12 +20,6 @@ import type { DadosWizard } from '@/shared/components/organisms/character-wizard
 
 // Orquestração: sessão → service. A rota/action só traduz HTTP/form; erros de
 // domínio (AppError) atravessam com status/código e são convertidos na borda.
-
-async function exigirUserId(): Promise<string> {
-  const sessao = await getSession()
-  if (!sessao) throw new AppError('Sessão necessária.', 401, 'SEM_SESSAO')
-  return sessao.user.id
-}
 
 // Listas do wizard de criação: compõe as consultas somente leitura do SRD e
 // modela no formato que a página desce por prop (spec: leitura RSC via controller).
