@@ -36,6 +36,7 @@ uma nem outra — é ADR.
 | 2026-10-20 | P5 · `docs/features/ui/0002-crud-personagem.md` | `alternarVisibilidade` não grava audit (só `character_created`/`character_updated` existem, como os critérios pediam) | Se a sala (P7) precisar rastrear abertura/fechamento de ficha, nasce `character_visibility_changed` |
 | 2026-10-20 | dev · infra local | Cache `.next` **compartilhado entre container e host** quebra o `yarn dev` local: o Turbopack reusa o cache dev gravado pelo container (caminhos absolutos `/app/...`) e entra em pânico (`failed to create directory /app/.next/...`) no meio das requisições — abortos de conexão intermitentes | `rm -rf .next` ao alternar entre os fluxos; ou dar `distDir` próprio ao container no compose |
 | 2026-10-20 | P5 · `docs/features/ui/0002-crud-personagem.md` | Step de equipamento do wizard renderiza os 182 itens do SRD numa lista única, sem busca nem agrupamento — funciona, mas é o step mais pesado da UI | Campo de busca ou agrupar por `category` (o service já traz) quando a gestão de equipamento evoluir |
+| 2026-11-24 | P6 · `docs/features/ui/0003-npcs.md` | Moldes de NPC sem edição (só criar/excluir) e `is_public` sem uso; fluxo **não exercitado** contra o app com banco real (só Prisma mockado); catálogo de 341 monstros sem busca/filtro | Editar molde e filtrar catálogo quando a P7 consumir; `is_public` se o compartilhamento entre mestres for pedido; exercitar no app rodando |
 
 ## Becos sem saída
 
