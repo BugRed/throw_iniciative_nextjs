@@ -11,7 +11,8 @@ const { getSessionMock, serviceMock, srdMock } = vi.hoisted(() => ({
   srdMock: { listarMonstros: vi.fn() },
 }))
 
-vi.mock('@/server/auth/session', () => ({ getSession: getSessionMock }))
+vi.mock('@/server/auth/auth', () => ({ auth: { api: { getSession: getSessionMock } } }))
+vi.mock('next/headers', () => ({ headers: async () => new Headers() }))
 vi.mock('@/server/npcs/npcs.service', () => serviceMock)
 vi.mock('@/server/srd/srd.service', () => srdMock)
 

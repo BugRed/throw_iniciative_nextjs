@@ -1,7 +1,6 @@
 import type { NpcTemplate } from '@prisma/client'
 
-import { getSession } from '@/server/auth/session'
-import { AppError } from '@/server/http/errors'
+import { exigirUserId } from '@/server/auth/session'
 import {
   buscarStatsMonstro,
   criarMolde,
@@ -13,12 +12,6 @@ import { listarMonstros, type SrdMonstroResumo } from '@/server/srd/srd.service'
 
 // Orquestração: sessão → service. Qualquer usuário logado cria NPC
 // (docs/negocio/npcs.md); a sessão é a única exigência.
-
-async function exigirUserId(): Promise<string> {
-  const sessao = await getSession()
-  if (!sessao) throw new AppError('Sessão necessária.', 401, 'SEM_SESSAO')
-  return sessao.user.id
-}
 
 export async function controlarCatalogo(): Promise<SrdMonstroResumo[]> {
   await exigirUserId()
