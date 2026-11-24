@@ -39,3 +39,4 @@ O que ainda não foi decidido.
 | Regra | Domínio | Status |
 |---|---|---|
 | [SRD é somente leitura por construção](./srd-somente-leitura.md) | srd | vigente |
+| [NPCs — Aventureiro e Respawn](./npcs.md) | personagens | vigente |

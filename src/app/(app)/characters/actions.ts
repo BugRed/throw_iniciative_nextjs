@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { AppError } from '@/server/http/errors'
 import {
   controlarCriacao,
+  controlarCriacaoNpc,
   controlarEdicao,
   controlarToggleVisibilidade,
 } from '@/server/personagens/personagens.controller'
@@ -15,11 +16,8 @@ function traduz(erro: unknown): EstadoAcao {
   return { erro: 'Algo falhou ao salvar a ficha. Tente de novo.' }
 }
 
-export async function acaoCriarPersonagem(
-  _estado: EstadoAcao | null,
-  formData: FormData,
-): Promise<EstadoAcao> {
-  const dados = {
+function lerFichaDoForm(formData: FormData) {
+  return {
     especie: String(formData.get('especie') ?? ''),
     classe: String(formData.get('classe') ?? ''),
     background: String(formData.get('background') ?? ''),
@@ -38,13 +36,33 @@ export async function acaoCriarPersonagem(
     nome: String(formData.get('nome') ?? ''),
     visivelAoMestre: formData.get('visivelAoMestre') !== 'off',
   }
+}
+
+async function criarFicha(
+  formData: FormData,
+  controlar: (entrada: unknown) => Promise<{ id: string }>,
+): Promise<EstadoAcao> {
   try {
-    const personagem = await controlarCriacao(dados)
+    const personagem = await controlar(lerFichaDoForm(formData))
     revalidatePath('/characters')
     return { ok: true, id: personagem.id }
   } catch (erro) {
     return traduz(erro)
   }
+}
+
+export async function acaoCriarPersonagem(
+  _estado: EstadoAcao | null,
+  formData: FormData,
+): Promise<EstadoAcao> {
+  return criarFicha(formData, controlarCriacao)
+}
+
+export async function acaoCriarNpcAventureiro(
+  _estado: EstadoAcao | null,
+  formData: FormData,
+): Promise<EstadoAcao> {
+  return criarFicha(formData, controlarCriacaoNpc)
 }
 
 export async function acaoEditarPersonagem(

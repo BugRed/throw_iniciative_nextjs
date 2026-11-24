@@ -351,3 +351,62 @@ describe('alternarVisibilidade', () => {
     await expect(alternarVisibilidade('u-1', 'p-404')).rejects.toBeInstanceOf(NotFoundError)
   })
 })
+
+describe('NPC Aventureiro (docs/negocio/npcs.md)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    prismaMock.character.create.mockResolvedValue({ ...FIGHTER_CRIADO, isNpc: true })
+    prismaMock.auditLog.create.mockResolvedValue({})
+  })
+
+  it('deve criar com is_npc e forçar visível ao mestre mesmo se o submit pedir ficha fechada', async () => {
+    mockarReferenciasSrd(10)
+
+    await criarPersonagem('u-1', { ...ENTRADA_FIGHTER, visivelAoMestre: false }, 'npc')
+
+    expect(prismaMock.character.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ isNpc: true, isVisibleToMaster: true }),
+      }),
+    )
+  })
+
+  it('deve manter o PJ com is_npc falso e respeitar a privacidade escolhida', async () => {
+    mockarReferenciasSrd(10)
+
+    await criarPersonagem('u-1', { ...ENTRADA_FIGHTER, visivelAoMestre: false })
+
+    expect(prismaMock.character.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ isNpc: false, isVisibleToMaster: false }),
+      }),
+    )
+  })
+
+  it('deve rejeitar o toggle de privacidade em NPC em vez de ignorar em silêncio', async () => {
+    prismaMock.character.findUnique.mockResolvedValue({
+      id: 'p-1',
+      ownerUserId: 'u-1',
+      isNpc: true,
+      isVisibleToMaster: true,
+    })
+
+    await expect(alternarVisibilidade('u-1', 'p-1')).rejects.toBeInstanceOf(ValidationError)
+    expect(prismaMock.character.update).not.toHaveBeenCalled()
+  })
+
+  it('deve rejeitar edição de visibilidade de NPC', async () => {
+    prismaMock.character.findUnique.mockResolvedValue({
+      id: 'p-1',
+      ownerUserId: 'u-1',
+      isNpc: true,
+      level: 1,
+      feats: [],
+      srdClass: { hitDie: 10 },
+    })
+
+    await expect(
+      atualizarPersonagem('u-1', 'p-1', { visivelAoMestre: false }),
+    ).rejects.toBeInstanceOf(ValidationError)
+  })
+})

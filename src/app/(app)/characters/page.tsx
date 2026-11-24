@@ -11,7 +11,12 @@ export default async function CharactersPage() {
     <main className="mx-auto flex max-w-4xl flex-1 flex-col gap-6 px-6 py-12">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold text-ink-900">Seus personagens</h1>
-        <Button href="/characters/new">Nova ficha</Button>
+        <div className="flex gap-2">
+          <Button href="/characters/new?tipo=npc" variant="secondary">
+            Novo NPC aventureiro
+          </Button>
+          <Button href="/characters/new">Nova ficha</Button>
+        </div>
       </div>
       {personagens.length === 0 ? (
         <p className="font-serif text-ink-500">

@@ -55,8 +55,8 @@ nelas — só o seeder. Cada uma guarda os campos que a UI consulta/filtra solto
 
 | Tabela | Propósito | Observações |
 |---|---|---|
-| `characters` | ficha de PJ **e** NPC completo | cálculos congelados em colunas (`hp_max`/`hp_current`, `armor_class`, `initiative_mod`, `proficiency_bonus`) — o wizard calcula no create/edit; listas de skills/spells/equipment/feats ficam em Json; `is_npc` marca NPC completo; `is_visible_to_master` é o toggle de privacidade; FKs de SRD são `SetNull` (referência some, ficha sobrevive) |
-| `npc_templates` | modelo leve de NPC reutilizável | stat block resumido (`hp_max`, `armor_class`, `initiative_mod`) + `statblock` Json (ações, reações, resistências…); `is_public` expõe a outros mestres |
+| `characters` | ficha de PJ **e** NPC completo | cálculos congelados em colunas (`hp_max`/`hp_current`, `armor_class`, `initiative_mod`, `proficiency_bonus`) — o wizard calcula no create/edit; listas de skills/spells/equipment/feats ficam em Json; `is_npc` marca NPC completo; `is_visible_to_master` é o toggle de privacidade (forçado a `true` em NPC); FKs de SRD são `SetNull` (referência some, ficha sobrevive) |
+| `npc_templates` | modelo leve de NPC reutilizável | stat block resumido (`hp_max`, `armor_class`, `initiative_mod`) + `statblock` Json (ações, reações, resistências…); `is_public` expõe a outros mestres (**ainda sem uso**: na P6 o molde é pessoal; regra em [`negocio/npcs.md`](../negocio/npcs.md)) |
 
 **Invariantes:** dono único (`owner_user_id`, cascade); a privacidade é dada de ficha, não
 de sala — o service do mestre filtra leitura por `is_visible_to_master`.

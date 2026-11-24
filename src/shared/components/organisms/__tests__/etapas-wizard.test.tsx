@@ -184,3 +184,11 @@ describe('EtapaInfo e EtapaRevisao', () => {
     expect(screen.getByText('Fighter (d10)')).toBeInTheDocument()
   })
 })
+
+describe('EtapaRevisao — NPC aventureiro', () => {
+  it('deve omitir a escolha de privacidade quando não há callback (NPC é sempre visível)', () => {
+    render(<EtapaRevisao nome="Vex" onNome={vi.fn()} visivel resumo={[]} />)
+
+    expect(screen.queryByLabelText('Mestre pode ver a ficha completa')).not.toBeInTheDocument()
+  })
+})

@@ -77,3 +77,11 @@ describe('FichaAcoes — privacidade', () => {
     expect(formData.get('id')).toBe('p-1')
   })
 })
+
+describe('FichaAcoes — NPC aventureiro', () => {
+  it('deve omitir o toggle de privacidade quando não há action de visibilidade', () => {
+    render(<FichaAcoes {...propsFicha({ acaoAlternarVisibilidade: undefined })} />)
+
+    expect(screen.queryByRole('button', { name: /ficha ao mestre/ })).not.toBeInTheDocument()
+  })
+})

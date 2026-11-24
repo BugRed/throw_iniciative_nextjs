@@ -62,6 +62,10 @@ export async function controlarCriacao(entrada: unknown): Promise<PersonagemResu
   return criarPersonagem(await exigirUserId(), entrada)
 }
 
+export async function controlarCriacaoNpc(entrada: unknown): Promise<PersonagemResumo> {
+  return criarPersonagem(await exigirUserId(), entrada, 'npc')
+}
+
 export async function controlarListagem(): Promise<PersonagemResumo[]> {
   return listarPersonagens(await exigirUserId())
 }

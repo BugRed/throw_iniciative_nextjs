@@ -37,6 +37,10 @@ projeto adere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   de privacidade fecha a ficha até para o mestre (leitura de não-dono vira 404). Lista em
   `/characters` e ficha completa em `/characters/[id]`; audit de criação/edição gravado —
   regras em [`docs/negocio/personagens-calculos.md`](./docs/negocio/personagens-calculos.md).
+- NPCs (P6): NPC Aventureiro (ficha completa pelo wizard do PJ, `is_npc`, sempre visível ao
+  mestre dono) em `/characters/new?tipo=npc`, e NPC Respawn — catálogo de monstros do SRD
+  com stat block editável antes de salvar como molde pessoal, em `/npcs`. Qualquer usuário
+  logado cria NPC. Regra em [`docs/negocio/npcs.md`](./docs/negocio/npcs.md).
 
 ### Alterado
 

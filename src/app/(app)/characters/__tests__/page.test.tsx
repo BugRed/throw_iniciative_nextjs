@@ -40,6 +40,10 @@ describe('Lista de personagens', () => {
       'href',
       '/characters/new',
     )
+    expect(screen.getByRole('link', { name: 'Novo NPC aventureiro' })).toHaveAttribute(
+      'href',
+      '/characters/new?tipo=npc',
+    )
   })
 
   it('deve convidar à primeira ficha quando a lista está vazia', async () => {
