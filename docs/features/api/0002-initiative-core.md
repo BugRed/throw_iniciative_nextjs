@@ -12,16 +12,16 @@
 ## Estado
 
 <!-- kit:camadas -->
-- [ ] prisma — migration: `cancelled`, modo de rolagem, Inspiração, remoção, desempate e tipo de auditoria
-- [ ] service — `src/server/iniciativa/`: dado, desempate, state machine, rolagens e transições da sala
-- [ ] controller — orquestração e eventos SSE
-- [ ] route — a definir (Server Actions como na P7, ou route handler)
+- [x] prisma — migration: `cancelled`, modo de rolagem, Inspiração, remoção, desempate e tipo de auditoria
+- [x] service — `src/server/iniciativa/`: dado, desempate, state machine, rolagens e transições da sala
+- [x] controller — orquestração e eventos SSE
+- [ ] route — Server Actions de iniciativa (abrir, avançar, rolar, pausar, solicitar pause) ainda não ligadas ao controller
 - [ ] ui — não se aplica a princípio: a UX da fila é a P9
-- [ ] teste — dado, desempate e state machine por comportamento
-- [ ] doc — `docs/negocio/iniciativa.md`
+- [x] teste — dado, desempate e state machine por comportamento
+- [x] doc — `docs/negocio/iniciativa.md`
 <!-- /kit:camadas -->
 
-**Próximo passo:** entrevista concluída e regra em [`iniciativa.md`](../../negocio/iniciativa.md).
+**Próximo passo:** ligar Server Actions e UI mínima (botão "Iniciar iniciativa" no lobby do mestre; "Solicitar pause" em /rooms para quem está em sala ativa), depois `/quality-check` e `/fechar`. Entrevista concluída e regra em [`iniciativa.md`](../../negocio/iniciativa.md).
 Implementar: migration → dado e desempate (funções puras) → services → controller + eventos →
 testes → `/quality-check` e `/fechar`.
 
@@ -82,7 +82,11 @@ morte por sala) e [`../../negocio/npcs.md`](../../negocio/npcs.md).
 <!-- /kit:criterios -->
 
 ## Dívida / não exercitado
-_(nada ainda)_
+- Camada `route`/`ui` **não feita**: o controller existe e está testado, mas nada na tela o chama ainda.
+- Gate completo (`yarn lint`, `test:cov` da suíte inteira) **não rodado** nesta sessão; só eslint, tsc e vitest nos diretórios tocados.
+- Abertura concorrente (dois cliques) não é serializada: sem lock, pode criar duas iniciativas (decisão minha, sem diretriz).
+- Quem é recusado por estar ocupado só descobre a própria mesa por `salaAtivaComoJogador`; não há evento dirigido a ele.
+- Sem evento SSE nem entrega ponta a ponta exercitada no navegador.
 
 ## Decisões em aberto
 - Nenhuma de negócio: a entrevista fechou tudo (ver `iniciativa.md`). Em aberto só o que ela
