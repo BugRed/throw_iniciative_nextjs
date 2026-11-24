@@ -56,7 +56,7 @@
 - **Mestre não escolhe PJ** na própria sala: só tem NPCs.
 - Jogador sem PJ pode ficar no lobby, mas é instruído a anexar um. **Sem PJ não há iniciativa.**
 - **Morte é por sala**: `room_characters.died_at` impede anexar de novo o mesmo PJ **àquela
-  sala**. Em outras salas ele segue vivo. Quem marca a morte é a iniciativa (P8/P9).
+  sala**. Em outras salas ele segue vivo. Só o mestre marca a morte, pela iniciativa ([`iniciativa.md`](./iniciativa.md)).
 
 ### NPCs e visibilidade
 
@@ -123,4 +123,5 @@ que ninguém conduz ou joga duas batalhas simultâneas, mas campanhas se alterna
   agendado (P10/P12).
 - NPC persistente de **outro** mestre (templates públicos viram ficha?): por ora só do próprio.
 - Exclusividade de sala `active`, pausa e "Solicitar pause": regra fechada, implementação na
-  feature de iniciativa.
+  feature de iniciativa (detalhes em [`iniciativa.md`](./iniciativa.md)).
+- **Reviver** um PJ morto na sala: fase futura (ver `iniciativa.md`).
