@@ -65,9 +65,9 @@ de sala — o service do mestre filtra leitura por `is_visible_to_master`.
 
 | Tabela | Propósito | Observações |
 |---|---|---|
-| `rooms` | uma mesa de jogo | `code` 6 chars **único** (gerado com retry no service); `status`: `lobby → active → finished`, `destroyed` é terminal (P12); `turn_seconds` default 120 (P10); `is_paused` liga/desliga o timer; `custom_sound_url` (P11); `master_user_id` é **nullable com SetNull** — é o caminho para a sala órfã de P12 (service marca `destroyed` antes de liberar a exclusão da conta) |
-| `room_members` | membership | **PK composta (room_id, user_id)** = membro único; papel fixo no ingresso (`master` = quem criou; resto `player`) |
-| `room_characters` | quem está na sala e qual PJ é ativo | PK composta (room_id, character_id); `active_for_user_id` preenchido só para PJ; **UNIQUE (room_id, active_for_user_id)** — NULLs múltiplos passam (NPCs), mas 2º PJ ativo do mesmo jogador não; o upsert do service troca o PJ usando essa UNIQUE como alvo |
+| `rooms` | uma mesa de jogo | `code` 6 chars **único** (gerado com retry no service); `status`: `lobby → active ⇄ paused → finished`, `destroyed` é terminal (soft, `destroyed_at`); `paused` é o estado da sala (libera mestre e jogadores para outra sala `active`), **não** a pausa do timer; `turn_seconds` default 120 (P10); `is_paused` liga/desliga o timer; `custom_sound_url` (P11); `master_user_id` é **nullable com SetNull** — é o caminho para a sala órfã de P12 (service marca `destroyed` antes de liberar a exclusão da conta) |
+| `room_members` | membership | **PK composta (room_id, user_id)** = membro único; `status` (`pending`/`active`/`left`/`banned`/`rejected`) — toda sala é privada, o código só abre um `pending`; `rejection_count` (3ª recusa barra) e `status_changed_at` (expiração do pedido em 7 dias e retenção de 30 dias do soft delete); papel `master` = quem criou, muda só na passagem de cargo |
+| `room_characters` | quem está na sala e qual PJ é ativo | PK composta (room_id, character_id); `active_for_user_id` preenchido só para PJ; `died_at` (morte é por sala: o PJ não volta àquela sala); **UNIQUE (room_id, active_for_user_id)** — NULLs múltiplos passam (NPCs), mas 2º PJ ativo do mesmo jogador não; o upsert do service troca o PJ usando essa UNIQUE como alvo |
 | `room_temp_npcs` | instância de NPC temporário | copia stats do template no momento da criação (`label` "Goblin #3", `instance_number` incremental); editar o template depois não altera instâncias vivas |
 
 **Invariantes:** 1 PJ ativo por jogador por sala (UNIQUE acima); sala `destroyed` não
