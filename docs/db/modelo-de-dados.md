@@ -77,8 +77,8 @@ aparece em listas nem aceita join (regra do service).
 
 | Tabela | Propósito | Observações |
 |---|---|---|
-| `initiatives` | um combate da sala | state machine `draft → rolling → ordered → active → finished` (transições autoritativas no server, regra em `docs/negocio/` na P8); `current_position` aponta o turno; `turn_started_at` baseia o countdown (P10); `paused_at` congela (retomada reajusta `turn_started_at` preservando o restante); histórico: várias iniciativas por sala, no máximo uma não-finalizada (guardado pelo service, não por UNIQUE) |
-| `initiative_participants` | participante do combate | **CHECK XOR: `character_id` ou `temp_npc_id`, exatamente um** (constraint escrita à mão na migration — Prisma não tem CHECK); `label` congela o nome de exibição; `user_id_responsible` diz quem rola/passa (NULL para NPC — rola o mestre); `initiative_mod` congela o modificador na rolagem e `roll_result` guarda o **total** (d20+mod) — o desempate oficial precisa dos dois; `position` é a ordem; `added_mode`: `roll` (disparo inicial) ou `append` (adicionado no meio) |
+| `initiatives` | um combate da sala | state machine `draft → rolling → ordered → active → finished`, mais `cancelled` (descartada antes de `active`, só a auditoria sobrevive); transições autoritativas no server, regra em [`negocio/iniciativa.md`](../negocio/iniciativa.md); `current_position` aponta o turno; `turn_started_at` baseia o countdown (P10); `paused_at` congela (retomada reajusta `turn_started_at` preservando o restante); histórico: várias iniciativas por sala, no máximo uma não-finalizada (guardado pelo service, não por UNIQUE) |
+| `initiative_participants` | participante do combate | **CHECK XOR: `character_id` ou `temp_npc_id`, exatamente um** (constraint escrita à mão na migration — Prisma não tem CHECK); `label` congela o nome de exibição; `user_id_responsible` diz quem rola/passa (NULL para NPC — rola o mestre); `initiative_mod` congela o modificador na rolagem e `roll_result` guarda o **total** (d20+mod) — o desempate oficial precisa dos dois; `position` é a ordem; `added_mode`: `roll` (disparo inicial) ou `append` (adicionado no meio); `roll_mode` (`normal`/`advantage`/`disadvantage`) é marcado pelo mestre; `has_inspiration` é binária; `tiebreak_rolls` guarda o d20 de cada rodada de desempate; `removed_at` marca a saída da fila (kick ou morte) sem apagar a linha |
 
 **Invariantes:** XOR acima (validado por teste de integração que tenta insert inválido);
 `has_rolled`/`has_played` controlam o fluxo da state machine.
@@ -88,7 +88,7 @@ aparece em listas nem aceita join (regra do service).
 | Tabela | Propósito | Observações |
 |---|---|---|
 | `notifications` | aviso persistido por usuário | tipo (`your_turn`, `you_are_next`, `timer_warning`, `room_destroyed`, `member_joined`) + `payload`; índice `(user_id, created_at)` |
-| `audit_rolls` | toda rolagem autoritativa | resultado bruto, modificador e total; **índice (room_id, created_at)** para a timeline de auditoria |
+| `audit_rolls` | toda rolagem autoritativa | resultado bruto, modificador e total; `kind` (`initiative`/`inspiration`/`tiebreak`), `discarded_result` (o outro d20 de vantagem/desvantagem ou o dado trocado pela Inspiração), `initiative_id` e `participant_id` **sem FK** (a auditoria sobrevive ao combate descartado); **índice (room_id, created_at)** para a timeline de auditoria |
 | `audit_logs` | evento de domínio auditável | `action` + `entity_id` + payload; user_id é `SetNull` — **auditoria sobrevive à exclusão do usuário** |
 
 ## Política de delete

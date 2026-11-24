@@ -10,8 +10,19 @@ enum InitiativeStatus {
   ordered
   active
   finished
+  cancelled
 
   @@map("initiative_status")
+}
+
+// Modo da rolagem: o mestre marca antes (surpresa, emboscada). Com vantagem ou
+// desvantagem o servidor rola dois d20 e fica com o maior ou o menor.
+enum RollMode {
+  normal
+  advantage
+  disadvantage
+
+  @@map("roll_mode")
 }
 
 enum ParticipantType {
@@ -29,17 +40,17 @@ enum AddedMode {
 }
 
 model Initiative {
-  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId         String           @map("room_id") @db.Uuid
-  room           Room             @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  status         InitiativeStatus @default(draft)
-  currentPosition Int             @default(0) @map("current_position")
-  turnStartedAt  DateTime?        @map("turn_started_at") @db.Timestamptz(6)
-  pausedAt       DateTime?        @map("paused_at") @db.Timestamptz(6)
-  startedAt      DateTime?        @map("started_at") @db.Timestamptz(6)
-  finishedAt     DateTime?        @map("finished_at") @db.Timestamptz(6)
-  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId          String           @map("room_id") @db.Uuid
+  room            Room             @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  status          InitiativeStatus @default(draft)
+  currentPosition Int              @default(0) @map("current_position")
+  turnStartedAt   DateTime?        @map("turn_started_at") @db.Timestamptz(6)
+  pausedAt        DateTime?        @map("paused_at") @db.Timestamptz(6)
+  startedAt       DateTime?        @map("started_at") @db.Timestamptz(6)
+  finishedAt      DateTime?        @map("finished_at") @db.Timestamptz(6)
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   participants InitiativeParticipant[]
 
@@ -53,24 +64,31 @@ model Initiative {
 // congela o modificador no momento da rolagem — o desempate oficial
 // (total → mod → reroll) precisa dos dois.
 model InitiativeParticipant {
-  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  initiativeId      String         @map("initiative_id") @db.Uuid
-  initiative        Initiative     @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  initiativeId      String          @map("initiative_id") @db.Uuid
+  initiative        Initiative      @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
   participantType   ParticipantType @map("participant_type")
-  characterId       String?        @map("character_id") @db.Uuid
-  character         Character?     @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  tempNpcId         String?        @map("temp_npc_id") @db.Uuid
-  tempNpc           RoomTempNpc?   @relation(fields: [tempNpcId], references: [id], onDelete: Cascade)
+  characterId       String?         @map("character_id") @db.Uuid
+  character         Character?      @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  tempNpcId         String?         @map("temp_npc_id") @db.Uuid
+  tempNpc           RoomTempNpc?    @relation(fields: [tempNpcId], references: [id], onDelete: Cascade)
   label             String
-  userIdResponsible String?        @map("user_id_responsible") @db.Uuid
-  userResponsible   user?          @relation("ResponsibleParticipants", fields: [userIdResponsible], references: [id], onDelete: SetNull)
-  initiativeMod     Int            @default(0) @map("initiative_mod")
-  rollResult        Int?           @map("roll_result")
+  userIdResponsible String?         @map("user_id_responsible") @db.Uuid
+  userResponsible   user?           @relation("ResponsibleParticipants", fields: [userIdResponsible], references: [id], onDelete: SetNull)
+  initiativeMod     Int             @default(0) @map("initiative_mod")
+  rollResult        Int?            @map("roll_result")
   position          Int?
-  hasRolled         Boolean        @default(false) @map("has_rolled")
-  hasPlayed         Boolean        @default(false) @map("has_played")
-  addedMode         AddedMode      @default(roll) @map("added_mode")
-  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  hasRolled         Boolean         @default(false) @map("has_rolled")
+  hasPlayed         Boolean         @default(false) @map("has_played")
+  rollMode          RollMode        @default(normal) @map("roll_mode")
+  // Inspiração é binária (SRD 5.2.1): tem ou não tem; vale só neste combate.
+  hasInspiration    Boolean         @default(false) @map("has_inspiration")
+  // d20 de cada rodada de desempate, em ordem; compara-se lexicograficamente.
+  tiebreakRolls     Int[]           @map("tiebreak_rolls")
+  // Remoção da fila (kick ou morte do PJ): a linha fica, a auditoria também.
+  removedAt         DateTime?       @map("removed_at") @db.Timestamptz(6)
+  addedMode         AddedMode       @default(roll) @map("added_mode")
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@index([initiativeId])
   @@index([characterId])
