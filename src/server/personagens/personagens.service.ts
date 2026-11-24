@@ -18,6 +18,7 @@ import {
 // fonte autoritativa dos cálculos; nada que chegue do client é confiado.
 
 const FICHA_NAO_ENCONTRADA = 'Ficha não encontrada.'
+const MSG_NPC_VISIVEL = 'NPC é sempre visível ao mestre dono.'
 
 export type PersonagemCompleto = Prisma.CharacterGetPayload<{
   include: { species: true; srdClass: true; subclass: true; background: true }
@@ -81,6 +82,7 @@ function statsDerivados(entrada: PersonagemNovo, hitDie: number, nivel = 1) {
 export async function criarPersonagem(
   userId: string,
   entradaDesvalidada: unknown,
+  tipo: 'pj' | 'npc' = 'pj',
 ): Promise<PersonagemResumo> {
   const parsed = esquemaPersonagemNovo.safeParse(entradaDesvalidada)
   if (!parsed.success) {
@@ -110,7 +112,9 @@ export async function criarPersonagem(
       preparedSpells: entrada.magias,
       equipment: entrada.equipamento,
       feats: entrada.feats,
-      isVisibleToMaster: entrada.visivelAoMestre,
+      isNpc: tipo === 'npc',
+      // NPC Aventureiro é sempre visível ao mestre dono (docs/negocio/npcs.md).
+      isVisibleToMaster: tipo === 'npc' ? true : entrada.visivelAoMestre,
       ...statsDerivados(entrada, classe.hitDie),
     },
     select: SELECT_RESUMO,
@@ -158,6 +162,8 @@ export async function atualizarPersonagem(
   const edicao = parsed.data
   const atual = await prisma.character.findUnique({ where: { id }, include: { srdClass: true } })
   if (!atual || atual.ownerUserId !== userId) throw new NotFoundError(FICHA_NAO_ENCONTRADA)
+  if (atual.isNpc && edicao.visivelAoMestre !== undefined)
+    throw new ValidationError(MSG_NPC_VISIVEL)
 
   const dados: Prisma.CharacterUncheckedUpdateInput = {}
   if (edicao.nome !== undefined) dados.name = edicao.nome
@@ -189,6 +195,7 @@ export async function atualizarPersonagem(
 export async function alternarVisibilidade(userId: string, id: string): Promise<PersonagemResumo> {
   const atual = await prisma.character.findUnique({ where: { id } })
   if (!atual || atual.ownerUserId !== userId) throw new NotFoundError(FICHA_NAO_ENCONTRADA)
+  if (atual.isNpc) throw new ValidationError(MSG_NPC_VISIVEL)
   const personagem = await prisma.character.update({
     where: { id },
     data: { isVisibleToMaster: !atual.isVisibleToMaster },
