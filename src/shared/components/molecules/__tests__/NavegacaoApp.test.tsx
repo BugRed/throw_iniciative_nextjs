@@ -18,6 +18,7 @@ describe('NavegacaoApp', () => {
     expect(screen.getByRole('navigation', { name: 'Navegação principal' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Início' })).toHaveAttribute('href', '/dashboard')
     expect(screen.getByRole('link', { name: 'Personagens' })).toHaveAttribute('href', '/characters')
+    expect(screen.getByRole('link', { name: 'Salas' })).toHaveAttribute('href', '/rooms')
   })
 
   it('deve marcar com aria-current a seção da rota atual (prefixo conta)', () => {

@@ -3,13 +3,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-// Navegação do app autenticado. Só rotas que existem — salas entram aqui
-// quando a P7 entregar a tela.
+// Navegação do app autenticado. Só rotas que existem.
 
 const ITENS = [
   { href: '/dashboard', rotulo: 'Início' },
   { href: '/characters', rotulo: 'Personagens' },
   { href: '/npcs', rotulo: 'NPCs' },
+  { href: '/rooms', rotulo: 'Salas' },
 ]
 
 export function NavegacaoApp() {
