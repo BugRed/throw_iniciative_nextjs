@@ -1,14 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import {
-  type Dispatch,
-  type ReactNode,
-  useActionState,
-  useEffect,
-  useReducer,
-  useState,
-} from 'react'
+import { type Dispatch, type ReactNode, useActionState, useReducer, useState } from 'react'
 
 import { ATRIBUTOS, custoTotalPointBuy } from '@/server/personagens/personagens.schema'
 import { Button } from '@/shared/components/atoms/Button'
@@ -29,6 +21,7 @@ import {
   type Opcao,
 } from '@/shared/components/organisms/etapas-wizard'
 import type { AcaoFormulario } from '@/shared/lib/estado-acao'
+import { useIrParaFichaCriada } from '@/shared/lib/use-ir-para-ficha-criada'
 
 // O organismo guarda todo o estado do wizard (um form acumulado) e desce
 // estado + callbacks por prop para as etapas presentacionais.
@@ -126,6 +119,7 @@ type ContextoEtapa = {
   estado: EstadoWizard
   classeAtual?: ClasseWizard
   subclassesDaClasse: Array<Opcao & { classeSlug: string }>
+  ehNpc: boolean
   atualizar: (patch: Partial<EstadoWizard>) => void
   mudarAtributo: (atributo: (typeof ATRIBUTOS)[number], delta: number) => void
   alternarSelecao: (campo: Selecao, slug: string, maximo?: number) => void
@@ -212,7 +206,7 @@ const CORPO_ETAPA: Array<(c: ContextoEtapa) => ReactNode> = [
       nome={c.estado.nome}
       onNome={(valor) => c.atualizar({ nome: valor })}
       visivel={c.estado.visivel}
-      onVisivel={(valor) => c.atualizar({ visivel: valor })}
+      onVisivel={c.ehNpc ? undefined : (valor) => c.atualizar({ visivel: valor })}
       resumo={resumoRevisao(c.dados, c.estado, c.classeAtual)}
     />
   ),
@@ -249,20 +243,29 @@ function contextoWizard(
   classeAtual: ClasseWizard | undefined,
   subclassesDaClasse: Array<Opcao & { classeSlug: string }>,
   despachar: Dispatch<AcaoWizard>,
+  ehNpc: boolean,
 ): ContextoEtapa {
   return {
     dados,
     estado,
     classeAtual,
     subclassesDaClasse,
+    ehNpc,
     atualizar: (patch) => despachar({ tipo: 'atualizar', patch }),
     mudarAtributo: (atributo, delta) => despachar({ tipo: 'atributo', atributo, delta }),
     alternarSelecao: (campo, slug, maximo) => despachar({ tipo: 'alternar', campo, slug, maximo }),
   }
 }
 
-export function CharacterWizard({ dados, acao }: { dados: DadosWizard; acao: AcaoFormulario }) {
-  const router = useRouter()
+export function CharacterWizard({
+  dados,
+  acao,
+  ehNpc = false,
+}: {
+  dados: DadosWizard
+  acao: AcaoFormulario
+  ehNpc?: boolean
+}) {
   const [estado, despachar] = useReducer(reducerWizard, ESTADO_INICIAL)
   const [erroEtapa, setErroEtapa] = useState('')
   const [estadoAcao, submeter] = useActionState(acao, null)
@@ -271,10 +274,7 @@ export function CharacterWizard({ dados, acao }: { dados: DadosWizard; acao: Aca
   const subclassesDaClasse = dados.subclasses.filter((s) => s.classeSlug === estado.classe)
   const erro = erroEtapa || (estadoAcao && 'erro' in estadoAcao ? estadoAcao.erro : '')
 
-  useEffect(() => {
-    if (estadoAcao && 'ok' in estadoAcao && estadoAcao.id)
-      router.push(`/characters/${estadoAcao.id}`)
-  }, [estadoAcao, router])
+  useIrParaFichaCriada(estadoAcao)
 
   function avancar() {
     const falha = validarEtapa(estado.etapa, estado, classeAtual)
@@ -282,7 +282,7 @@ export function CharacterWizard({ dados, acao }: { dados: DadosWizard; acao: Aca
     if (!falha) despachar({ tipo: 'etapa', indice: Math.min(estado.etapa + 1, ETAPAS.length - 1) })
   }
 
-  const contexto = contextoWizard(dados, estado, classeAtual, subclassesDaClasse, despachar)
+  const contexto = contextoWizard(dados, estado, classeAtual, subclassesDaClasse, despachar, ehNpc)
 
   return (
     <form action={submeter} className="flex flex-col gap-6">

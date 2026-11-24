@@ -71,4 +71,14 @@ describe('Ficha de personagem por id', () => {
     expect(screen.getByRole('heading', { name: 'Bree' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Salvar' })).not.toBeInTheDocument()
   })
+
+  it('deve omitir o toggle de privacidade em NPC aventureiro (sempre visível ao mestre)', async () => {
+    sessionMock.mockResolvedValue({ user: { id: 'u-1' } })
+    controllerMock.controlarBusca.mockResolvedValue({ ...FICHA, isNpc: true })
+
+    render(await CharacterSheetPage({ params: PARAMS }))
+
+    expect(screen.getByRole('button', { name: 'Salvar' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /ficha ao mestre/ })).not.toBeInTheDocument()
+  })
 })

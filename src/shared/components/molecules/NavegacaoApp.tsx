@@ -9,6 +9,7 @@ import { usePathname } from 'next/navigation'
 const ITENS = [
   { href: '/dashboard', rotulo: 'Início' },
   { href: '/characters', rotulo: 'Personagens' },
+  { href: '/npcs', rotulo: 'NPCs' },
 ]
 
 export function NavegacaoApp() {
