@@ -7,7 +7,7 @@ const COOKIE_SESSAO = 'better-auth.session_token'
 
 // Área logada do produto: dashboard hoje; rooms/characters/settings entram
 // nas próximas fases e já ficam protegidas.
-const ROTAS_PROTEGIDAS = /^\/(dashboard|rooms|characters|settings)(\/|$)/
+const ROTAS_PROTEGIDAS = /^\/(dashboard|rooms|characters|npcs|settings)(\/|$)/
 
 export async function proxy(req: NextRequest) {
   const temCookieSessao = req.cookies.has(COOKIE_SESSAO)

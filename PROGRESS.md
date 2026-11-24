@@ -12,14 +12,13 @@ de feature mora na spec (`docs/features/`), o que já foi entregue mora no `CHAN
 
 | Feature | Spec | Bloqueio |
 |---|---|---|
-| Design system Pergaminho (P1) — fechada, aguardando merge | [ui/0001](docs/features/ui/0001-design-system-pergaminho.md) | — |
+| Salas, membership e SSE (P7) — falta exercitar o fluxo com dois usuários | [api/0001](docs/features/api/0001-salas-membership.md) | — |
 
 ## Fila (ordem de prioridade)
 
-1. P2 — Better Auth + Discord opcional
-2. P3 — Schema Prisma de domínio
-3. P4 — Importação SRD 5.2
-4. P5–P13 — ver [`plano.md`](plano.md) §6 e [`ROADMAP.md`](ROADMAP.md)
+1. P8 — Núcleo de iniciativa (inclui a regra de uma sala `active` por usuário e o `paused`,
+   já documentadas em [`docs/negocio/salas.md`](docs/negocio/salas.md))
+2. P9–P13 — ver [`plano.md`](plano.md) §6 e [`ROADMAP.md`](ROADMAP.md)
 
 ## Bloqueado por decisão do usuário
 

@@ -89,12 +89,15 @@ export function FichaAcoes({
   nivel: number
   visivel: boolean
   acaoEditar: AcaoFormulario
-  acaoAlternarVisibilidade: AcaoFormulario
+  // Ausente em NPC Aventureiro: sempre visível ao mestre dono.
+  acaoAlternarVisibilidade?: AcaoFormulario
 }) {
   return (
     <div className="flex flex-col gap-4">
       <FormEdicao id={id} nome={nome} nivel={nivel} acaoEditar={acaoEditar} />
-      <FormVisibilidade id={id} visivel={visivel} acao={acaoAlternarVisibilidade} />
+      {acaoAlternarVisibilidade && (
+        <FormVisibilidade id={id} visivel={visivel} acao={acaoAlternarVisibilidade} />
+      )}
     </div>
   )
 }

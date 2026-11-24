@@ -34,7 +34,7 @@ export default async function CharacterSheetPage({ params }: { params: Promise<{
           nivel={ficha.level}
           visivel={ficha.isVisibleToMaster}
           acaoEditar={acaoEditarPersonagem}
-          acaoAlternarVisibilidade={acaoAlternarVisibilidade}
+          acaoAlternarVisibilidade={ficha.isNpc ? undefined : acaoAlternarVisibilidade}
         />
       )}
     </main>

@@ -37,6 +37,16 @@ projeto adere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   de privacidade fecha a ficha até para o mestre (leitura de não-dono vira 404). Lista em
   `/characters` e ficha completa em `/characters/[id]`; audit de criação/edição gravado —
   regras em [`docs/negocio/personagens-calculos.md`](./docs/negocio/personagens-calculos.md).
+- NPCs (P6): NPC Aventureiro (ficha completa pelo wizard do PJ, `is_npc`, sempre visível ao
+  mestre dono) em `/characters/new?tipo=npc`, e NPC Respawn — catálogo de monstros do SRD
+  com stat block editável antes de salvar como molde pessoal, em `/npcs`. Qualquer usuário
+  logado cria NPC. Regra em [`docs/negocio/npcs.md`](./docs/negocio/npcs.md).
+- Salas (P7, em andamento): criar sala com código de 6 caracteres e entrar por código — toda
+  sala é privada, o código só abre um pedido que o mestre aceita ou recusa. Lobby com a mesa
+  (PJ ativo de cada jogador), NPCs de ficha e monstros instanciados de molde (o jogador vê só
+  o rótulo), expulsão com bloqueio, saída e volta por novo pedido, passagem do cargo de mestre
+  e encerramento da sala. O lobby atualiza sozinho por SSE (ADR-0024). Regras em
+  [`docs/negocio/salas.md`](./docs/negocio/salas.md); páginas em `/rooms`.
 
 ### Alterado
 

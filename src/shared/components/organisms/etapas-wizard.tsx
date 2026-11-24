@@ -237,7 +237,8 @@ export function EtapaRevisao({
   nome: string
   onNome: (valor: string) => void
   visivel: boolean
-  onVisivel: (valor: boolean) => void
+  // Ausente = sem escolha de privacidade (NPC Aventureiro é sempre visível).
+  onVisivel?: (valor: boolean) => void
   resumo: Array<[string, string]>
 }) {
   return (
@@ -251,11 +252,13 @@ export function EtapaRevisao({
         required
         maxLength={50}
       />
-      <Checkbox
-        rotulo="Mestre pode ver a ficha completa"
-        checked={visivel}
-        onChange={() => onVisivel(!visivel)}
-      />
+      {onVisivel && (
+        <Checkbox
+          rotulo="Mestre pode ver a ficha completa"
+          checked={visivel}
+          onChange={() => onVisivel(!visivel)}
+        />
+      )}
       <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 rounded-md border border-gold-200 bg-paper-50 px-4 py-3 font-sans text-sm">
         {resumo.map(([chave, valor]) => (
           <div key={chave} className="contents">

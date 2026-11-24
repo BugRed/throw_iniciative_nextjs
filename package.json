@@ -25,7 +25,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:seed:demo": "tsx prisma/seed/index.ts --demo"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",

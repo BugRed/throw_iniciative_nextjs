@@ -10,6 +10,7 @@ vi.mock('@/server/personagens/personagens.controller', () => controllerMock)
 vi.mock('@/server/auth/session', () => ({ getSession: sessionMock }))
 vi.mock('@/app/(app)/characters/actions', () => ({
   acaoCriarPersonagem: vi.fn(),
+  acaoCriarNpcAventureiro: vi.fn(),
 }))
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -43,10 +44,18 @@ describe('Página de nova ficha', () => {
   it('deve montar o wizard com os dados do SRD buscados no servidor', async () => {
     controllerMock.controlarDadosWizard.mockResolvedValue(DADOS)
 
-    render(await NewCharacterPage())
+    render(await NewCharacterPage({ searchParams: Promise.resolve({}) }))
 
     expect(controllerMock.controlarDadosWizard).toHaveBeenCalledTimes(1)
     expect(screen.getByRole('heading', { name: 'Nova ficha' })).toBeInTheDocument()
     expect(screen.getByText('Espécie', { selector: 'legend' })).toBeInTheDocument()
+  })
+
+  it('deve abrir o wizard em modo NPC aventureiro, sem a escolha de privacidade', async () => {
+    controllerMock.controlarDadosWizard.mockResolvedValue(DADOS)
+
+    render(await NewCharacterPage({ searchParams: Promise.resolve({ tipo: 'npc' }) }))
+
+    expect(screen.getByRole('heading', { name: 'Novo NPC aventureiro' })).toBeInTheDocument()
   })
 })

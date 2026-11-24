@@ -19,9 +19,8 @@ const { getSessionMock, serviceMock, srdMock } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@/server/auth/session', () => ({
-  getSession: getSessionMock,
-}))
+vi.mock('@/server/auth/auth', () => ({ auth: { api: { getSession: getSessionMock } } }))
+vi.mock('next/headers', () => ({ headers: async () => new Headers() }))
 vi.mock('@/server/personagens/personagens.service', () => serviceMock)
 vi.mock('@/server/srd/srd.service', () => srdMock)
 
@@ -29,6 +28,7 @@ import { AppError } from '@/server/http/errors'
 import {
   controlarBusca,
   controlarCriacao,
+  controlarCriacaoNpc,
   controlarDadosWizard,
   controlarEdicao,
   controlarListagem,
@@ -122,5 +122,19 @@ describe('controlarDadosWizard', () => {
     ])
     expect(dados.magiasNivel1.map((m) => m.extra)).toEqual(['truque', 'nv 1'])
     expect(dados.equipamentos).toEqual([{ slug: 'longsword', name: 'Longsword' }])
+  })
+})
+
+describe('controlarCriacaoNpc', () => {
+  it('deve exigir sessão e delegar ao service marcando o tipo npc', async () => {
+    getSessionMock.mockResolvedValueOnce(null)
+    await expect(controlarCriacaoNpc({})).rejects.toMatchObject({ status: 401 })
+
+    getSessionMock.mockResolvedValue(SESSAO)
+    serviceMock.criarPersonagem.mockResolvedValue({ id: 'n-1' })
+
+    await controlarCriacaoNpc({ nome: 'Vex' })
+
+    expect(serviceMock.criarPersonagem).toHaveBeenCalledWith('u-1', { nome: 'Vex' }, 'npc')
   })
 })

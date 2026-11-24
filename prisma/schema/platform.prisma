@@ -8,6 +8,9 @@ enum NotificationType {
   timer_warning
   room_destroyed
   member_joined
+  join_requested
+  join_rejected
+  pause_requested
 
   @@map("notification_type")
 }

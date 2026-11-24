@@ -30,6 +30,12 @@ export class NotFoundError extends AppError {
   }
 }
 
+export class ForbiddenError extends AppError {
+  constructor(message = 'Sem permissão para esta ação.') {
+    super(message, 403, 'PROIBIDO')
+  }
+}
+
 export class ConflictError extends AppError {
   constructor(message = 'Conflito com um registro existente.', detalhes?: unknown) {
     super(message, 409, 'CONFLITO', detalhes)

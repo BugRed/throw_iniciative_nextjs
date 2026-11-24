@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const { controllerMock, revalidatePathMock } = vi.hoisted(() => ({
   controllerMock: {
     controlarCriacao: vi.fn(),
+    controlarCriacaoNpc: vi.fn(),
     controlarEdicao: vi.fn(),
     controlarToggleVisibilidade: vi.fn(),
   },
@@ -16,6 +17,7 @@ vi.mock('@/server/personagens/personagens.controller', () => controllerMock)
 
 import {
   acaoAlternarVisibilidade,
+  acaoCriarNpcAventureiro,
   acaoCriarPersonagem,
   acaoEditarPersonagem,
 } from '@/app/(app)/characters/actions'
@@ -167,5 +169,24 @@ describe('acaoAlternarVisibilidade', () => {
     const estado = await acaoAlternarVisibilidade(null, formData)
 
     expect(estado).toEqual({ erro: 'Ficha não encontrada.' })
+  })
+})
+
+describe('acaoCriarNpcAventureiro', () => {
+  it('deve criar pelo controller de NPC e devolver o id', async () => {
+    controllerMock.controlarCriacaoNpc.mockResolvedValue({ id: 'n-1' })
+
+    const estado = await acaoCriarNpcAventureiro(null, formDeCriacao())
+
+    expect(estado).toEqual({ ok: true, id: 'n-1' })
+    expect(controllerMock.controlarCriacao).not.toHaveBeenCalled()
+  })
+
+  it('deve devolver o erro de domínio legível', async () => {
+    controllerMock.controlarCriacaoNpc.mockRejectedValue(new AppError('Ficha inválida.', 422, 'X'))
+
+    expect(await acaoCriarNpcAventureiro(null, formDeCriacao())).toEqual({
+      erro: 'Ficha inválida.',
+    })
   })
 })
