@@ -33,18 +33,32 @@ model Notification {
 
 // Cada rolagem de dado autoritativa (d20 de iniciativa etc.) vira uma linha —
 // resultado bruto, modificador e total, para auditoria posterior.
+enum AuditRollKind {
+  initiative
+  inspiration
+  tiebreak
+
+  @@map("audit_roll_kind")
+}
+
 model AuditRoll {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId      String   @map("room_id") @db.Uuid
-  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  userId      String?  @map("user_id") @db.Uuid
-  user        user?    @relation("AuditRolls", fields: [userId], references: [id], onDelete: SetNull)
-  characterId String?  @map("character_id") @db.Uuid
-  diceType    String   @default("d20") @map("dice_type")
-  result      Int
-  modifier    Int      @default(0)
-  total       Int
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId          String        @map("room_id") @db.Uuid
+  room            Room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId          String?       @map("user_id") @db.Uuid
+  user            user?         @relation("AuditRolls", fields: [userId], references: [id], onDelete: SetNull)
+  characterId     String?       @map("character_id") @db.Uuid
+  diceType        String        @default("d20") @map("dice_type")
+  kind            AuditRollKind @default(initiative)
+  // Sem FK de propósito: a auditoria sobrevive ao descarte do combate.
+  initiativeId    String?       @map("initiative_id") @db.Uuid
+  participantId   String?       @map("participant_id") @db.Uuid
+  // Segundo d20 de vantagem/desvantagem (o descartado); `result` é o que valeu.
+  discardedResult Int?          @map("discarded_result")
+  result          Int
+  modifier        Int           @default(0)
+  total           Int
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@index([roomId, createdAt])
   @@index([userId])

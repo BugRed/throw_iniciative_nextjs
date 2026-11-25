@@ -41,3 +41,4 @@ O que ainda não foi decidido.
 | [SRD é somente leitura por construção](./srd-somente-leitura.md) | srd | vigente |
 | [NPCs — Aventureiro e Respawn](./npcs.md) | personagens | vigente |
 | [Salas — entrada, membership e lobby](./salas.md) | salas | vigente |
+| [Iniciativa — dado no servidor, ordem e estados](./iniciativa.md) | iniciativa | vigente |

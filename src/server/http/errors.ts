@@ -36,6 +36,12 @@ export class ForbiddenError extends AppError {
   }
 }
 
+export class TooManyRequestsError extends AppError {
+  constructor(message = 'Muitas requisições, aguarde alguns segundos.') {
+    super(message, 429, 'LIMITE')
+  }
+}
+
 export class ConflictError extends AppError {
   constructor(message = 'Conflito com um registro existente.', detalhes?: unknown) {
     super(message, 409, 'CONFLITO', detalhes)

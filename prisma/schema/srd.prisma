@@ -26,23 +26,23 @@ model SrdClass {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  subclasses      SrdSubclass[]
-  classFeatures   SrdClassFeature[]
-  characters      Character[]
+  subclasses    SrdSubclass[]
+  classFeatures SrdClassFeature[]
+  characters    Character[]
 
   @@map("srd_classes")
 }
 
 model SrdSubclass {
-  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  slug         String    @unique
-  name         String
-  levelGained  Int?      @map("level_gained")
-  payload      Json
-  srdClassId   String    @map("srd_class_id") @db.Uuid
-  srdClass     SrdClass  @relation(fields: [srdClassId], references: [id], onDelete: Cascade)
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug        String   @unique
+  name        String
+  levelGained Int?     @map("level_gained")
+  payload     Json
+  srdClassId  String   @map("srd_class_id") @db.Uuid
+  srdClass    SrdClass @relation(fields: [srdClassId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   classFeatures SrdClassFeature[]
   characters    Character[]
@@ -52,17 +52,17 @@ model SrdSubclass {
 }
 
 model SrdClassFeature {
-  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  slug          String        @unique
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug          String       @unique
   name          String
   level         Int
   payload       Json
-  srdClassId    String        @map("srd_class_id") @db.Uuid
-  srdClass      SrdClass      @relation(fields: [srdClassId], references: [id], onDelete: Cascade)
-  srdSubclassId String?       @map("srd_subclass_id") @db.Uuid
-  srdSubclass   SrdSubclass?  @relation(fields: [srdSubclassId], references: [id], onDelete: SetNull)
-  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  srdClassId    String       @map("srd_class_id") @db.Uuid
+  srdClass      SrdClass     @relation(fields: [srdClassId], references: [id], onDelete: Cascade)
+  srdSubclassId String?      @map("srd_subclass_id") @db.Uuid
+  srdSubclass   SrdSubclass? @relation(fields: [srdSubclassId], references: [id], onDelete: SetNull)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@index([srdClassId])
   @@index([srdSubclassId])

@@ -9,6 +9,13 @@ projeto adere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Adicionado
 
+- Núcleo de iniciativa (P8): dado rolado no servidor com rejection sampling e auditoria em
+  `audit_rolls`; estados `draft → rolling → ordered → active` conduzidos só pelo mestre, com
+  cancelamento antes de `active`; vantagem/desvantagem marcada pelo mestre; Inspiração (SRD
+  5.2.1); desempate por total, modificador e re-rolagem entre os empatados; remoção da fila;
+  morte do PJ por sala; pausa e retomada da sala; exclusividade de uma sala `active` por
+  usuário e "Solicitar pause"; rate limit de 30 ações por 60 s. Regras em
+  [`docs/negocio/iniciativa.md`](./docs/negocio/iniciativa.md). A tela do combate é a P9.
 - Fundação do app Throw Iniciative a partir do boilerplate FH: stack Next 16 + Prisma +
   Docker de dev, mesclada ao kit de processo fh-estado na raiz do repo (ADRs 0001–0020).
 - Landing pública do produto em RSC puro e validação de ambiente no boot
