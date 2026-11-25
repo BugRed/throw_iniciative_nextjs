@@ -14,6 +14,8 @@ import {
 import {
   pausarSala,
   retomarSala,
+  salaAtivaComoJogador,
+  type SalaOcupada,
   solicitarPause,
 } from '@/server/iniciativa/iniciativa.pausa.service'
 import {
@@ -109,4 +111,9 @@ export const controlarRetomada = (roomId: string): Promise<void> =>
 export async function controlarPedidoDePause(): Promise<void> {
   const { roomId, mestreId } = await solicitarPause(await exigirUserId())
   avisar('notification:new', roomId, mestreId)
+}
+
+// A mesa em que o usuário joga agora, se houver: só o próprio ocupado a vê.
+export async function controlarSalaAtiva(): Promise<SalaOcupada | null> {
+  return salaAtivaComoJogador(await exigirUserId())
 }

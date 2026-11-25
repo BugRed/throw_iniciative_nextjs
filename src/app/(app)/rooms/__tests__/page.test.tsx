@@ -1,14 +1,19 @@
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { controllerMock } = vi.hoisted(() => ({ controllerMock: { controlarMinhasSalas: vi.fn() } }))
+const { controllerMock, iniciativaMock } = vi.hoisted(() => ({
+  controllerMock: { controlarMinhasSalas: vi.fn() },
+  iniciativaMock: { controlarSalaAtiva: vi.fn(), controlarPedidoDePause: vi.fn() },
+}))
 
 vi.mock('@/server/salas/salas.controller', () => controllerMock)
+vi.mock('@/server/iniciativa/iniciativa.controller', () => iniciativaMock)
 
 import SalasPage from '@/app/(app)/rooms/page'
 
 beforeEach(() => {
   vi.clearAllMocks()
+  iniciativaMock.controlarSalaAtiva.mockResolvedValue(null)
 })
 
 describe('Página de salas', () => {
@@ -38,5 +43,27 @@ describe('Página de salas', () => {
     render(await SalasPage())
 
     expect(screen.getByText(/ainda não está em nenhuma sala/)).toBeInTheDocument()
+  })
+
+  it('deve oferecer "Solicitar pause" só a quem está em combate em outra sala', async () => {
+    controllerMock.controlarMinhasSalas.mockResolvedValue([])
+    iniciativaMock.controlarSalaAtiva.mockResolvedValue({
+      id: 'r-9',
+      nome: 'Mesa 9',
+      masterUserId: 'm',
+    })
+
+    render(await SalasPage())
+
+    expect(screen.getByText('Mesa 9')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Solicitar pause' })).toBeInTheDocument()
+  })
+
+  it('não deve mostrar o aviso de combate a quem não está em sala ativa', async () => {
+    controllerMock.controlarMinhasSalas.mockResolvedValue([])
+
+    render(await SalasPage())
+
+    expect(screen.queryByRole('button', { name: 'Solicitar pause' })).not.toBeInTheDocument()
   })
 })
