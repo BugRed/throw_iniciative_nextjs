@@ -15,15 +15,14 @@
 - [x] prisma — migration: `cancelled`, modo de rolagem, Inspiração, remoção, desempate e tipo de auditoria
 - [x] service — `src/server/iniciativa/`: dado, desempate, state machine, rolagens e transições da sala
 - [x] controller — orquestração e eventos SSE
-- [ ] route — Server Actions de iniciativa (abrir, avançar, rolar, pausar, solicitar pause) ainda não ligadas ao controller
-- [ ] ui — não se aplica a princípio: a UX da fila é a P9
+- [x] route — Server Actions `acaoAbrirIniciativa` e `acaoSolicitarPause`; as demais operações do controller esperam a UI da P9
+- [x] ui — mínima: "Iniciar iniciativa" no lobby do mestre e "Solicitar pause" em `/rooms`; a fila é a P9
 - [x] teste — dado, desempate e state machine por comportamento
 - [x] doc — `docs/negocio/iniciativa.md`
 <!-- /kit:camadas -->
 
-**Próximo passo:** ligar Server Actions e UI mínima (botão "Iniciar iniciativa" no lobby do mestre; "Solicitar pause" em /rooms para quem está em sala ativa), depois `/quality-check` e `/fechar`. Entrevista concluída e regra em [`iniciativa.md`](../../negocio/iniciativa.md).
-Implementar: migration → dado e desempate (funções puras) → services → controller + eventos →
-testes → `/quality-check` e `/fechar`.
+**Próximo passo:** exercitar o fluxo contra o banco real com dois usuários (ver dívida) e,
+então, abrir a P9 (fila na tela, passar a vez, finalizar).
 
 ## Problema / motivação
 A sala já reúne mestre, jogadores, PJs e NPCs (P7), mas não há combate: ninguém rola
@@ -70,20 +69,20 @@ morte por sala) e [`../../negocio/npcs.md`](../../negocio/npcs.md).
 ## Critérios de aceite
 
 <!-- kit:criterios -->
-- [ ] O dado é rolado no servidor sem viés de módulo; toda rolagem grava `audit_rolls`.
-- [ ] Jogador rola o próprio d20 uma vez; mestre rola cada NPC com d20 independente e não rola por jogador.
-- [ ] Vantagem/desvantagem do mestre e Inspiração (re-rolagem depois de rolar) funcionam; a rolagem original fica auditada.
-- [ ] Ordem por total, modificador e re-rolagem entre empatados, repetida até desempatar.
-- [ ] Estados avançam só pelo mestre; ordenar exige ao menos um que rolou; cancelar antes de `active` volta a sala a `lobby`.
-- [ ] Remover participante e marcar morte tiram da ordem e passam a vez quando for o caso.
-- [ ] Abrir ou retomar recusa quem está `active` em outra sala e mostra a mesa só ao ocupado; "Solicitar pause" notifica o outro mestre.
-- [ ] Rate limit de 30 ações por 60 s responde 429 sem gravar.
-- [ ] Regras em `docs/negocio/iniciativa.md`; gate verde.
+- [x] O dado é rolado no servidor sem viés de módulo; toda rolagem grava `audit_rolls`.
+- [x] Jogador rola o próprio d20 uma vez; mestre rola cada NPC com d20 independente e não rola por jogador.
+- [x] Vantagem/desvantagem do mestre e Inspiração (re-rolagem depois de rolar) funcionam; a rolagem original fica auditada.
+- [x] Ordem por total, modificador e re-rolagem entre empatados, repetida até desempatar.
+- [x] Estados avançam só pelo mestre; ordenar exige ao menos um que rolou; cancelar antes de `active` volta a sala a `lobby`.
+- [x] Remover participante e marcar morte tiram da ordem e passam a vez quando for o caso.
+- [x] Abrir ou retomar recusa quem está `active` em outra sala e mostra a mesa só ao ocupado; "Solicitar pause" notifica o outro mestre.
+- [x] Rate limit de 30 ações por 60 s responde 429 sem gravar.
+- [x] Regras em `docs/negocio/iniciativa.md`; gate verde.
 <!-- /kit:criterios -->
 
 ## Dívida / não exercitado
-- Camada `route`/`ui` **não feita**: o controller existe e está testado, mas nada na tela o chama ainda.
-- Gate completo (`yarn lint`, `test:cov` da suíte inteira) **não rodado** nesta sessão; só eslint, tsc e vitest nos diretórios tocados.
+- Gate rodado: `format:check`, `tsc`, `lint` e `test:cov` (535 testes, com `--testTimeout=30000`); Sonar **não** rodado.
+- As operações do controller sem tela (avançar, rolar, Inspiração, desempate, remover, morte, pausa) só têm teste unitário até a P9.
 - Abertura concorrente (dois cliques) não é serializada: sem lock, pode criar duas iniciativas (decisão minha, sem diretriz).
 - Quem é recusado por estar ocupado só descobre a própria mesa por `salaAtivaComoJogador`; não há evento dirigido a ele.
 - Sem evento SSE nem entrega ponta a ponta exercitada no navegador.

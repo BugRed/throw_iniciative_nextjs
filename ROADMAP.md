@@ -17,7 +17,7 @@ Legenda: ✅ entregue · 🚧 em andamento · ⏳ na fila · 💡 pós-MVP
 | P5 | CRUD de personagem (wizard de criação) | ✅ |
 | P6 | NPCs: templates leves + NPC completo | ✅ |
 | P7 | Salas, membership e tempo real (SSE) | 🚧 |
-| P8 | Núcleo de iniciativa (state machine + dado server-side) | ⏳ |
+| P8 | Núcleo de iniciativa (state machine + dado server-side) | 🚧 |
 | P9 | UX de iniciativa (fila, vez, passar, adicionar, finalizar) | ⏳ |
 | P10 | Timer autoritativo + passe automático | ⏳ |
 | P11 | Notificações sonoras e visuais | ⏳ |
