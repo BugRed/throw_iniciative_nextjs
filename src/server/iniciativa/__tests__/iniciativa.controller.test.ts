@@ -13,6 +13,7 @@ const { getSessionMock, servicos, busMock } = vi.hoisted(() => ({
     pausarSala: vi.fn(),
     retomarSala: vi.fn(),
     solicitarPause: vi.fn(),
+    salaAtivaComoJogador: vi.fn(),
     rolarDesempate: vi.fn(),
     rolarIniciativaDosNpcs: vi.fn(),
     rolarMinhaIniciativa: vi.fn(),
@@ -33,14 +34,19 @@ import { AppError, ValidationError } from '@/server/http/errors'
 import {
   controlarAbertura,
   controlarAvanco,
+  controlarCancelamento,
   controlarConcessaoInspiracao,
+  controlarDesempate,
+  controlarInspiracaoUsada,
   controlarModoRolagem,
   controlarMorte,
   controlarPausa,
   controlarPedidoDePause,
+  controlarRemocaoDaFila,
   controlarRetomada,
   controlarRolagemDosNpcs,
   controlarRolagemPropria,
+  controlarSalaAtiva,
 } from '@/server/iniciativa/iniciativa.controller'
 
 const SALA = '11111111-1111-4111-8111-111111111111'
@@ -133,5 +139,38 @@ describe('pausa', () => {
       roomId: 'r-9',
       alvo: 'u-m9',
     })
+  })
+})
+
+describe('demais operações do jogador e do mestre', () => {
+  it.each([
+    ['cancelar', controlarCancelamento, 'cancelarIniciativa'],
+    ['usar Inspiração', controlarInspiracaoUsada, 'usarInspiracao'],
+    ['rolar desempate', controlarDesempate, 'rolarDesempate'],
+  ] as const)('deve delegar %s com o usuário da sessão', async (_nome, operacao, service) => {
+    await operacao(SALA)
+
+    expect(servicos[service]).toHaveBeenCalledWith('u-1', SALA)
+    expect(busMock.publicar).toHaveBeenCalledWith(
+      expect.objectContaining({ tipo: 'initiative:changed' }),
+    )
+  })
+
+  it('deve delegar a remoção da fila validando o participante', async () => {
+    await controlarRemocaoDaFila(SALA, ALVO)
+
+    expect(servicos.removerParticipante).toHaveBeenCalledWith('u-1', SALA, ALVO)
+    await expect(controlarRemocaoDaFila(SALA, 'x')).rejects.toThrow(ValidationError)
+  })
+
+  it('deve devolver a mesa em que o usuário joga agora', async () => {
+    servicos.salaAtivaComoJogador.mockResolvedValue({
+      id: 'r-9',
+      nome: 'Mesa 9',
+      masterUserId: 'm',
+    })
+
+    expect(await controlarSalaAtiva()).toEqual({ id: 'r-9', nome: 'Mesa 9', masterUserId: 'm' })
+    expect(servicos.salaAtivaComoJogador).toHaveBeenCalledWith('u-1')
   })
 })
