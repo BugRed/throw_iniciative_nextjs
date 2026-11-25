@@ -1,14 +1,17 @@
 import Link from 'next/link'
 
+import { acaoSolicitarPause } from '@/app/(app)/rooms/iniciativa-actions'
+import { controlarSalaAtiva } from '@/server/iniciativa/iniciativa.controller'
 import { controlarMinhasSalas } from '@/server/salas/salas.controller'
 import { Badge } from '@/shared/components/atoms/Badge'
 import { Button } from '@/shared/components/atoms/Button'
+import { FormAcao } from '@/shared/components/molecules/FormAcao'
 import { ROTULO_STATUS_SALA } from '@/shared/components/organisms/lobby-tipos'
 
 export const dynamic = 'force-dynamic'
 
 export default async function SalasPage() {
-  const salas = await controlarMinhasSalas()
+  const [salas, ocupada] = await Promise.all([controlarMinhasSalas(), controlarSalaAtiva()])
 
   return (
     <main className="mx-auto flex max-w-4xl flex-1 flex-col gap-6 px-6 py-12">
@@ -21,6 +24,15 @@ export default async function SalasPage() {
           <Button href="/rooms/new">Criar sala</Button>
         </div>
       </div>
+      {ocupada && (
+        <section className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-gold-400 px-4 py-3">
+          <p className="font-serif text-ink-900">
+            Você está em combate em <strong>{ocupada.nome}</strong>. Para ativar outra sala, peça ao
+            mestre que pause esta.
+          </p>
+          <FormAcao acao={acaoSolicitarPause} rotulo="Solicitar pause" />
+        </section>
+      )}
       {salas.length === 0 ? (
         <p className="font-serif text-ink-500">
           Você ainda não está em nenhuma sala. Crie uma como mestre ou entre com o código de uma

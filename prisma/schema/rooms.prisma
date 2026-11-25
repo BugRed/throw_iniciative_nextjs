@@ -48,13 +48,13 @@ model Room {
   createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  members   RoomMember[]
+  members                 RoomMember[]
   characterRoomCharacters RoomCharacter[]
-  tempNpcs  RoomTempNpc[]
-  initiatives Initiative[]
-  notifications Notification[]
-  auditRolls  AuditRoll[]
-  auditLogs   AuditLog[]
+  tempNpcs                RoomTempNpc[]
+  initiatives             Initiative[]
+  notifications           Notification[]
+  auditRolls              AuditRoll[]
+  auditLogs               AuditLog[]
 
   @@index([masterUserId])
   @@map("rooms")
@@ -64,17 +64,17 @@ model Room {
 // ingresso — mestre é quem criou a sala; os demais entram como player — e só
 // muda na passagem de cargo.
 model RoomMember {
-  roomId   String     @map("room_id") @db.Uuid
-  room     Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  userId   String     @map("user_id") @db.Uuid
-  user     user       @relation("RoomMemberships", fields: [userId], references: [id], onDelete: Cascade)
-  role     MemberRole @default(player)
-  status   MembershipStatus @default(pending)
+  roomId          String           @map("room_id") @db.Uuid
+  room            Room             @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId          String           @map("user_id") @db.Uuid
+  user            user             @relation("RoomMemberships", fields: [userId], references: [id], onDelete: Cascade)
+  role            MemberRole       @default(player)
+  status          MembershipStatus @default(pending)
   // Recusas acumuladas: a 3ª barra novos pedidos naquela sala.
-  rejectionCount Int @default(0) @map("rejection_count")
+  rejectionCount  Int              @default(0) @map("rejection_count")
   // Última troca de status: base da expiração do pedido (7 dias) e da retenção.
-  statusChangedAt DateTime @default(now()) @map("status_changed_at") @db.Timestamptz(6)
-  joinedAt DateTime   @default(now()) @map("joined_at") @db.Timestamptz(6)
+  statusChangedAt DateTime         @default(now()) @map("status_changed_at") @db.Timestamptz(6)
+  joinedAt        DateTime         @default(now()) @map("joined_at") @db.Timestamptz(6)
 
   @@id([roomId, userId])
   @@index([userId])
@@ -86,17 +86,17 @@ model RoomMember {
 // (room_id, active_for_user_id) aceita vários NULL (NPCs) mas impede dois
 // PJ ativos do mesmo jogador — o service faz upsert nela para trocar o PJ.
 model RoomCharacter {
-  roomId           String    @map("room_id") @db.Uuid
-  room             Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  characterId      String    @map("character_id") @db.Uuid
-  character        Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  isNpc            Boolean   @default(false) @map("is_npc")
-  activeForUserId  String?   @map("active_for_user_id") @db.Uuid
-  activeForUser    user?     @relation("ActiveRoomCharacters", fields: [activeForUserId], references: [id], onDelete: SetNull)
+  roomId          String    @map("room_id") @db.Uuid
+  room            Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  characterId     String    @map("character_id") @db.Uuid
+  character       Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  isNpc           Boolean   @default(false) @map("is_npc")
+  activeForUserId String?   @map("active_for_user_id") @db.Uuid
+  activeForUser   user?     @relation("ActiveRoomCharacters", fields: [activeForUserId], references: [id], onDelete: SetNull)
   // Morte é por sala: a PK (room, character) já impede anexar de novo o mesmo
   // PJ, e `diedAt` diz que ele não volta mesmo depois de desanexado.
-  diedAt           DateTime? @map("died_at") @db.Timestamptz(6)
-  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  diedAt          DateTime? @map("died_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@id([roomId, characterId])
   @@unique([roomId, activeForUserId])
@@ -108,19 +108,19 @@ model RoomCharacter {
 // de uma instanciação ×4). Copia os stats do template no momento da criação —
 // editar o template depois não altera instâncias vivas.
 model RoomTempNpc {
-  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roomId         String      @map("room_id") @db.Uuid
-  room           Room        @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  npcTemplateId  String?     @map("npc_template_id") @db.Uuid
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomId         String       @map("room_id") @db.Uuid
+  room           Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  npcTemplateId  String?      @map("npc_template_id") @db.Uuid
   npcTemplate    NpcTemplate? @relation(fields: [npcTemplateId], references: [id], onDelete: SetNull)
   label          String
-  instanceNumber Int         @map("instance_number")
-  hpCurrent      Int         @map("hp_current")
-  hpMax          Int         @map("hp_max")
-  armorClass     Int         @map("armor_class")
-  initiativeMod  Int         @map("initiative_mod")
+  instanceNumber Int          @map("instance_number")
+  hpCurrent      Int          @map("hp_current")
+  hpMax          Int          @map("hp_max")
+  armorClass     Int          @map("armor_class")
+  initiativeMod  Int          @map("initiative_mod")
   statblock      Json
-  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
 
   participants InitiativeParticipant[]
 

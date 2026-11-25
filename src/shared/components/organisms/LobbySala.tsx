@@ -131,6 +131,15 @@ export function LobbySala({
         moldes={opcoes.moldes}
         acoes={acoes}
       />
+      {lobby.ehMestre && lobby.sala.status === 'lobby' && acoes.abrirIniciativa && (
+        <FormAcao
+          acao={acoes.abrirIniciativa}
+          rotulo="Iniciar iniciativa"
+          variante="primary"
+          tamanho="md"
+          campos={{ roomId }}
+        />
+      )}
       <AcoesDaSala lobby={lobby} acoes={acoes} />
     </div>
   )

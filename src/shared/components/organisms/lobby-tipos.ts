@@ -36,6 +36,8 @@ export type AcoesLobby = {
   anexarNpc: AcaoFormulario
   removerNpc: AcaoFormulario
   instanciarNpc: AcaoFormulario
+  // Só o mestre vê; ausente nos testes que não a exercitam.
+  abrirIniciativa?: AcaoFormulario
 }
 
 // O que cada papel pode escolher nos seletores: PJs próprios (jogador) e

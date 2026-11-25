@@ -11,6 +11,7 @@ import {
   acaoRemoverNpc,
   acaoSair,
 } from '@/app/(app)/rooms/actions'
+import { acaoAbrirIniciativa } from '@/app/(app)/rooms/iniciativa-actions'
 import { AppError } from '@/server/http/errors'
 import { controlarMoldes } from '@/server/npcs/npcs.controller'
 import { controlarListagem } from '@/server/personagens/personagens.controller'
@@ -31,6 +32,7 @@ const ACOES: AcoesLobby = {
   anexarNpc: acaoAnexarNpc,
   removerNpc: acaoRemoverNpc,
   instanciarNpc: acaoInstanciarNpc,
+  abrirIniciativa: acaoAbrirIniciativa,
 }
 
 // Quem não é membro (ou a sala não existe) recebe o mesmo 404: a página não
