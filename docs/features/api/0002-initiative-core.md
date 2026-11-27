@@ -21,8 +21,8 @@
 - [x] doc — `docs/negocio/iniciativa.md`
 <!-- /kit:camadas -->
 
-**Próximo passo:** exercitar o fluxo contra o banco real com dois usuários (ver dívida) e,
-então, abrir a P9 (fila na tela, passar a vez, finalizar).
+**Próximo passo:** exercitar no navegador com dois usuários (o ciclo dos services já passou
+contra o banco real; ver dívida) e, então, abrir a P9 (fila na tela, passar a vez, finalizar).
 
 ## Problema / motivação
 A sala já reúne mestre, jogadores, PJs e NPCs (P7), mas não há combate: ninguém rola
