@@ -1,7 +1,12 @@
-import type { InitiativeParticipant, Prisma, Room } from '@prisma/client'
+import type { InitiativeParticipant, Room } from '@prisma/client'
 
 import { prisma } from '@/server/db/prisma'
 import { ConflictError, ValidationError } from '@/server/http/errors'
+import {
+  deTemporario,
+  deVinculo,
+  type NovoParticipante,
+} from '@/server/iniciativa/iniciativa.entrantes'
 import { reposicionar } from '@/server/iniciativa/iniciativa.fila'
 import { exigirAtual, exigirNinguemOcupado, naFila } from '@/server/iniciativa/iniciativa.regras'
 import { esquemaAbertura } from '@/server/iniciativa/iniciativa.schema'
@@ -10,36 +15,19 @@ import { exigirMestre } from '@/server/salas/salas.regras'
 // Abrir, avançar e cancelar a iniciativa (docs/negocio/iniciativa.md). Só o
 // mestre conduz os estados.
 
-type NovoParticipante = Omit<Prisma.InitiativeParticipantUncheckedCreateInput, 'initiativeId'>
-
 async function montarParticipantes(roomId: string, excluir: string[]): Promise<NovoParticipante[]> {
   const [personagens, temporarios] = await Promise.all([
     prisma.roomCharacter.findMany({
-      // PJ morto ou sem jogador ativo não entra; NPC de ficha entra sempre.
+      // Espelha `vinculoElegivel` na consulta, para não trazer quem não entra.
       where: { roomId, OR: [{ isNpc: true }, { activeForUserId: { not: null }, diedAt: null }] },
       include: { character: true },
     }),
     prisma.roomTempNpc.findMany({ where: { roomId } }),
   ])
-  const dePersonagem = personagens
-    .filter((p) => !excluir.includes(p.characterId))
-    .map((p) => ({
-      participantType: 'character' as const,
-      characterId: p.characterId,
-      label: p.character.name,
-      // NPC não tem responsável: quem rola é o mestre.
-      userIdResponsible: p.isNpc ? null : p.activeForUserId,
-      initiativeMod: p.character.initiativeMod,
-    }))
-  const deTemporario = temporarios
-    .filter((t) => !excluir.includes(t.id))
-    .map((t) => ({
-      participantType: 'temp_npc' as const,
-      tempNpcId: t.id,
-      label: t.label,
-      initiativeMod: t.initiativeMod,
-    }))
-  return [...dePersonagem, ...deTemporario]
+  return [
+    ...personagens.filter((p) => !excluir.includes(p.characterId)).map(deVinculo),
+    ...temporarios.filter((t) => !excluir.includes(t.id)).map(deTemporario),
+  ]
 }
 
 export async function abrirIniciativa(

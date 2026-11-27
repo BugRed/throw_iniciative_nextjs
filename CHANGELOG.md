@@ -9,6 +9,11 @@ projeto adere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Adicionado
 
+- Combate em curso (P9, servidor): passar a vez por quem está nela ou pelo mestre, com rotação
+  transacional e contador de rodada; entrada no meio (rola antes da ordenação, vai ao fim da
+  fila depois); finalizar volta a sala a `lobby`. Remover o último quando era a vez dele agora
+  avança a rodada. A tela é o próximo passo da P9. Regras em
+  [`docs/negocio/iniciativa.md`](./docs/negocio/iniciativa.md).
 - Núcleo de iniciativa (P8): dado rolado no servidor com rejection sampling e auditoria em
   `audit_rolls`; estados `draft → rolling → ordered → active` conduzidos só pelo mestre, com
   cancelamento antes de `active`; vantagem/desvantagem marcada pelo mestre; Inspiração (SRD

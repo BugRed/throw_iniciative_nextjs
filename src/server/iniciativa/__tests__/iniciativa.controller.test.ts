@@ -18,6 +18,9 @@ const { getSessionMock, servicos, busMock } = vi.hoisted(() => ({
     rolarIniciativaDosNpcs: vi.fn(),
     rolarMinhaIniciativa: vi.fn(),
     usarInspiracao: vi.fn(),
+    passarVez: vi.fn(),
+    finalizarIniciativa: vi.fn(),
+    adicionarParticipante: vi.fn(),
   },
   busMock: { publicar: vi.fn() },
 }))
@@ -25,6 +28,7 @@ const { getSessionMock, servicos, busMock } = vi.hoisted(() => ({
 vi.mock('@/server/auth/auth', () => ({ auth: { api: { getSession: getSessionMock } } }))
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }))
 vi.mock('@/server/iniciativa/iniciativa.abertura.service', () => servicos)
+vi.mock('@/server/iniciativa/iniciativa.combate.service', () => servicos)
 vi.mock('@/server/iniciativa/iniciativa.mesa.service', () => servicos)
 vi.mock('@/server/iniciativa/iniciativa.pausa.service', () => servicos)
 vi.mock('@/server/iniciativa/iniciativa.rolagem.service', () => servicos)
@@ -37,9 +41,12 @@ import {
   controlarCancelamento,
   controlarConcessaoInspiracao,
   controlarDesempate,
+  controlarEntradaNoMeio,
+  controlarFinalizacao,
   controlarInspiracaoUsada,
   controlarModoRolagem,
   controlarMorte,
+  controlarPasseDeVez,
   controlarPausa,
   controlarPedidoDePause,
   controlarRemocaoDaFila,
@@ -147,6 +154,8 @@ describe('demais operações do jogador e do mestre', () => {
     ['cancelar', controlarCancelamento, 'cancelarIniciativa'],
     ['usar Inspiração', controlarInspiracaoUsada, 'usarInspiracao'],
     ['rolar desempate', controlarDesempate, 'rolarDesempate'],
+    ['passar a vez', controlarPasseDeVez, 'passarVez'],
+    ['finalizar', controlarFinalizacao, 'finalizarIniciativa'],
   ] as const)('deve delegar %s com o usuário da sessão', async (_nome, operacao, service) => {
     await operacao(SALA)
 
@@ -161,6 +170,17 @@ describe('demais operações do jogador e do mestre', () => {
 
     expect(servicos.removerParticipante).toHaveBeenCalledWith('u-1', SALA, ALVO)
     await expect(controlarRemocaoDaFila(SALA, 'x')).rejects.toThrow(ValidationError)
+  })
+
+  it('deve repassar a entrada no meio ao service sem interpretá-la', async () => {
+    const entrada = { tempNpcId: ALVO }
+
+    await controlarEntradaNoMeio(SALA, entrada)
+
+    expect(servicos.adicionarParticipante).toHaveBeenCalledWith('u-1', SALA, entrada)
+    expect(busMock.publicar).toHaveBeenCalledWith(
+      expect.objectContaining({ tipo: 'initiative:changed', roomId: SALA }),
+    )
   })
 
   it('deve devolver a mesa em que o usuário joga agora', async () => {

@@ -6,6 +6,11 @@ import {
   cancelarIniciativa,
 } from '@/server/iniciativa/iniciativa.abertura.service'
 import {
+  adicionarParticipante,
+  finalizarIniciativa,
+  passarVez,
+} from '@/server/iniciativa/iniciativa.combate.service'
+import {
   concederInspiracao,
   marcarModoDeRolagem,
   marcarMorteDoPersonagem,
@@ -99,6 +104,16 @@ export async function controlarMorte(roomId: string, characterId: string): Promi
   const personagem = id(characterId)
   await mudarIniciativa(roomId, (u, s) => marcarMorteDoPersonagem(u, s, personagem))
   avisar('character:changed', roomId)
+}
+
+export const controlarPasseDeVez = (roomId: string): Promise<void> =>
+  mudarIniciativa(roomId, passarVez)
+
+export const controlarFinalizacao = (roomId: string): Promise<void> =>
+  mudarIniciativa(roomId, finalizarIniciativa)
+
+export async function controlarEntradaNoMeio(roomId: string, entrada: unknown): Promise<void> {
+  return mudarIniciativa(roomId, (u, s) => adicionarParticipante(u, s, entrada))
 }
 
 export const controlarPausa = (roomId: string): Promise<void> =>
