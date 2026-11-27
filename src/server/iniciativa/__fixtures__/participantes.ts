@@ -37,6 +37,7 @@ export function iniciativa(
     roomId: 'r-1',
     status,
     currentPosition: 0,
+    round: 1,
     turnStartedAt: null,
     pausedAt: null,
     startedAt: null,

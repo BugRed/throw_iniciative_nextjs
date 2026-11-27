@@ -11,4 +11,10 @@ export const esquemaAbertura = z.object({
 
 export const esquemaModoRolagem = z.enum(['normal', 'advantage', 'disadvantage'])
 
+// Quem entra no meio: um personagem da sala (PJ ou NPC de ficha) ou um NPC temporário.
+export const esquemaEntrante = z.union([
+  z.object({ characterId: esquemaId }).strict(),
+  z.object({ tempNpcId: esquemaId }).strict(),
+])
+
 export type AberturaEntrada = z.infer<typeof esquemaAbertura>
