@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { lobbyMock, personagensMock, moldesMock, notFoundMock } = vi.hoisted(() => ({
+const { lobbyMock, personagensMock, moldesMock, notFoundMock, iniciativaMock } = vi.hoisted(() => ({
   lobbyMock: { controlarLobby: vi.fn() },
+  iniciativaMock: { controlarPainel: vi.fn() },
   personagensMock: { controlarListagem: vi.fn() },
   moldesMock: { controlarMoldes: vi.fn() },
   notFoundMock: vi.fn(() => {
@@ -17,6 +18,12 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/server/salas/salas.controller', () => lobbyMock)
 vi.mock('@/server/personagens/personagens.controller', () => personagensMock)
 vi.mock('@/server/npcs/npcs.controller', () => moldesMock)
+vi.mock('@/server/iniciativa/iniciativa.controller', () => iniciativaMock)
+vi.mock('@/app/(app)/rooms/iniciativa-actions', async (original) => {
+  // Só os nomes importam: cada export vira um vi.fn(), sem carregar o servidor.
+  const nomes = Object.keys(await original<Record<string, unknown>>())
+  return Object.fromEntries(nomes.map((n) => [n, vi.fn()]))
+})
 vi.mock('@/app/(app)/rooms/actions', () => ({
   acaoAnexarNpc: vi.fn(),
   acaoAnexarPersonagem: vi.fn(),
@@ -53,6 +60,7 @@ beforeEach(() => {
   personagensMock.controlarListagem.mockResolvedValue(FICHAS)
   moldesMock.controlarMoldes.mockResolvedValue([{ id: 'm-1', name: 'Goblin' }])
   lobbyMock.controlarLobby.mockResolvedValue(LOBBY)
+  iniciativaMock.controlarPainel.mockResolvedValue({ ehMestre: false, atual: null, candidatos: [] })
 })
 
 describe('Página da sala', () => {
@@ -83,6 +91,21 @@ describe('Página da sala', () => {
     const { container } = render(await SalaPage({ params }))
 
     expect(container.querySelector('[data-sala="r-1"]')).not.toBeNull()
+  })
+
+  it('deve oferecer ao mestre a abertura com os candidatos lidos do servidor', async () => {
+    lobbyMock.controlarLobby.mockResolvedValue({ ...LOBBY, ehMestre: true })
+    iniciativaMock.controlarPainel.mockResolvedValue({
+      ehMestre: true,
+      atual: null,
+      candidatos: [{ id: 'c-1', rotulo: 'Julius', campo: 'characterId' }],
+    })
+
+    render(await SalaPage({ params }))
+
+    expect(iniciativaMock.controlarPainel).toHaveBeenCalledWith('r-1')
+    expect(screen.getByRole('checkbox', { name: 'Julius' })).toBeChecked()
+    expect(screen.getByRole('button', { name: 'Iniciar iniciativa' })).toBeInTheDocument()
   })
 
   it.each([404, 422])('deve responder 404 quando o controller devolve %s', async (status) => {

@@ -14,7 +14,7 @@ de feature mora na spec (`docs/features/`), o que já foi entregue mora no `CHAN
 |---|---|---|
 | Salas, membership e SSE (P7) — falta exercitar o fluxo com dois usuários | [api/0001](docs/features/api/0001-salas-membership.md) | — |
 | Núcleo de iniciativa (P8) — falta exercitar contra o banco e o navegador | [api/0002](docs/features/api/0002-initiative-core.md) | — |
-| Combate na tela (P9) — servidor pronto; faltam Server Actions e UI | [ui/0004](docs/features/ui/0004-initiative-ux.md) | — |
+| Combate na tela (P9) — entregue; falta exercitar no navegador com mestre e dois jogadores | [ui/0004](docs/features/ui/0004-initiative-ux.md) | — |
 
 ## Fila (ordem de prioridade)
 

@@ -87,6 +87,18 @@
 - A Inspiração não gasta se perde: vale só naquele combate.
 - Antes de `active` não se finaliza: cancela-se.
 
+### O que cada um vê
+
+- **Mesa aberta:** todos da sala veem a mesma fila — a ordem, o **total** de cada um (PJ e
+  NPC), quem está na vez, o próximo, a rodada e as marcas (já jogou, Inspiração, modo de
+  rolagem, desempate pendente).
+- Durante `rolling` a lista já mostra quem rolou e o total, antes de o mestre ordenar.
+- Quem saiu da fila (kick, morte, não rolou a tempo) **some** da tela; a linha e a auditoria
+  continuam no banco.
+- Só o **mestre** vê os candidatos a entrar (na abertura e no meio) e os controles de cada
+  participante. Os stats de NPC continuam só dele (ver [`salas.md`](./salas.md)).
+- Decidido em 2026-11-27.
+
 ### Sala: `active`, pausa e exclusividade
 
 - A sala fica `active` apenas durante o que **não pode ser parado**: a iniciativa e o combate.
@@ -134,8 +146,8 @@ convivam em `lobby` e `paused`.
 
 ## Onde é aplicada
 
-[`src/server/iniciativa/`](../../src/server/iniciativa/) (abertura, rolagem, mesa, pausa e
-combate). Schema em [`prisma/schema/initiative.prisma`](../../prisma/schema/initiative.prisma).
+[`src/server/iniciativa/`](../../src/server/iniciativa/) (abertura, rolagem, mesa, pausa,
+combate e leitura — `iniciativa.leitura.service.ts`). Schema em [`prisma/schema/initiative.prisma`](../../prisma/schema/initiative.prisma).
 Specs: [`api/0002`](../features/api/0002-initiative-core.md) (núcleo, P8) e
 [`ui/0004`](../features/ui/0004-initiative-ux.md) (combate na tela, P9).
 
