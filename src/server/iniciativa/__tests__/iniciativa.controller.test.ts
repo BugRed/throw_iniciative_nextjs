@@ -21,6 +21,7 @@ const { getSessionMock, servicos, busMock } = vi.hoisted(() => ({
     passarVez: vi.fn(),
     finalizarIniciativa: vi.fn(),
     adicionarParticipante: vi.fn(),
+    lerPainelIniciativa: vi.fn(),
   },
   busMock: { publicar: vi.fn() },
 }))
@@ -29,6 +30,7 @@ vi.mock('@/server/auth/auth', () => ({ auth: { api: { getSession: getSessionMock
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }))
 vi.mock('@/server/iniciativa/iniciativa.abertura.service', () => servicos)
 vi.mock('@/server/iniciativa/iniciativa.combate.service', () => servicos)
+vi.mock('@/server/iniciativa/iniciativa.leitura.service', () => servicos)
 vi.mock('@/server/iniciativa/iniciativa.mesa.service', () => servicos)
 vi.mock('@/server/iniciativa/iniciativa.pausa.service', () => servicos)
 vi.mock('@/server/iniciativa/iniciativa.rolagem.service', () => servicos)
@@ -46,6 +48,7 @@ import {
   controlarInspiracaoUsada,
   controlarModoRolagem,
   controlarMorte,
+  controlarPainel,
   controlarPasseDeVez,
   controlarPausa,
   controlarPedidoDePause,
@@ -192,5 +195,21 @@ describe('demais operações do jogador e do mestre', () => {
 
     expect(await controlarSalaAtiva()).toEqual({ id: 'r-9', nome: 'Mesa 9', masterUserId: 'm' })
     expect(servicos.salaAtivaComoJogador).toHaveBeenCalledWith('u-1')
+  })
+})
+
+describe('leitura do painel', () => {
+  it('deve ler como o usuário da sessão e não avisar a sala', async () => {
+    const painel = { ehMestre: false, atual: null, candidatos: [] }
+    servicos.lerPainelIniciativa.mockResolvedValue(painel)
+
+    expect(await controlarPainel(SALA)).toBe(painel)
+    expect(servicos.lerPainelIniciativa).toHaveBeenCalledWith('u-1', SALA)
+    expect(busMock.publicar).not.toHaveBeenCalled()
+  })
+
+  it('deve recusar id malformado sem ler nada', async () => {
+    await expect(controlarPainel('x')).rejects.toThrow(ValidationError)
+    expect(servicos.lerPainelIniciativa).not.toHaveBeenCalled()
   })
 })

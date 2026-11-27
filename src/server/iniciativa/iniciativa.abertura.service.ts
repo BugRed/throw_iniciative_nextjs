@@ -6,6 +6,7 @@ import {
   deTemporario,
   deVinculo,
   type NovoParticipante,
+  ONDE_ELEGIVEL,
 } from '@/server/iniciativa/iniciativa.entrantes'
 import { reposicionar } from '@/server/iniciativa/iniciativa.fila'
 import { exigirAtual, exigirNinguemOcupado, naFila } from '@/server/iniciativa/iniciativa.regras'
@@ -18,8 +19,7 @@ import { exigirMestre } from '@/server/salas/salas.regras'
 async function montarParticipantes(roomId: string, excluir: string[]): Promise<NovoParticipante[]> {
   const [personagens, temporarios] = await Promise.all([
     prisma.roomCharacter.findMany({
-      // Espelha `vinculoElegivel` na consulta, para não trazer quem não entra.
-      where: { roomId, OR: [{ isNpc: true }, { activeForUserId: { not: null }, diedAt: null }] },
+      where: { roomId, ...ONDE_ELEGIVEL },
       include: { character: true },
     }),
     prisma.roomTempNpc.findMany({ where: { roomId } }),

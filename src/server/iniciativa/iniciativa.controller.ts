@@ -11,6 +11,10 @@ import {
   passarVez,
 } from '@/server/iniciativa/iniciativa.combate.service'
 import {
+  lerPainelIniciativa,
+  type PainelIniciativa,
+} from '@/server/iniciativa/iniciativa.leitura.service'
+import {
   concederInspiracao,
   marcarModoDeRolagem,
   marcarMorteDoPersonagem,
@@ -131,4 +135,9 @@ export async function controlarPedidoDePause(): Promise<void> {
 // A mesa em que o usuário joga agora, se houver: só o próprio ocupado a vê.
 export async function controlarSalaAtiva(): Promise<SalaOcupada | null> {
   return salaAtivaComoJogador(await exigirUserId())
+}
+
+// O combate da sala como a pessoa logada o vê (leitura: não avisa ninguém).
+export async function controlarPainel(roomId: string): Promise<PainelIniciativa> {
+  return lerPainelIniciativa(await exigirUserId(), id(roomId))
 }
