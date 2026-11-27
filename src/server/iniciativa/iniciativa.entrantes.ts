@@ -9,6 +9,11 @@ export type NovoParticipante = Omit<
 >
 
 // PJ morto ou sem jogador ativo não entra; NPC de ficha entra sempre.
+// `ONDE_ELEGIVEL` é a mesma regra como filtro de consulta.
+export const ONDE_ELEGIVEL = {
+  OR: [{ isNpc: true }, { activeForUserId: { not: null }, diedAt: null }],
+} satisfies Prisma.RoomCharacterWhereInput
+
 export function vinculoElegivel(vinculo: RoomCharacter): boolean {
   return vinculo.isNpc || (vinculo.activeForUserId !== null && vinculo.diedAt === null)
 }
