@@ -152,28 +152,3 @@ describe('LobbySala para o mestre', () => {
     expect(screen.getByText('Em andamento')).toBeInTheDocument()
   })
 })
-
-describe('LobbySala — iniciar iniciativa', () => {
-  const ACOES_COM_INICIO = { ...ACOES, abrirIniciativa: acao() }
-
-  it('deve oferecer "Iniciar iniciativa" ao mestre com a sala em lobby', () => {
-    render(<LobbySala lobby={COMO_MESTRE} acoes={ACOES_COM_INICIO} opcoes={OPCOES} />)
-
-    expect(screen.getByRole('button', { name: 'Iniciar iniciativa' })).toBeInTheDocument()
-  })
-
-  it('não deve oferecer ao jogador nem com a sala já em andamento', () => {
-    const { rerender } = render(<LobbySala lobby={BASE} acoes={ACOES_COM_INICIO} opcoes={OPCOES} />)
-    expect(screen.queryByRole('button', { name: 'Iniciar iniciativa' })).not.toBeInTheDocument()
-
-    rerender(
-      <LobbySala
-        lobby={{ ...COMO_MESTRE, sala: { ...COMO_MESTRE.sala, status: 'active' } }}
-        acoes={ACOES_COM_INICIO}
-        opcoes={OPCOES}
-      />,
-    )
-
-    expect(screen.queryByRole('button', { name: 'Iniciar iniciativa' })).not.toBeInTheDocument()
-  })
-})

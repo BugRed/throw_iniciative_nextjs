@@ -9,6 +9,12 @@ projeto adere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Adicionado
 
+- Combate na tela (P9, UI): fila de iniciativa visível a todos da sala (mesa aberta: ordem e
+  totais, inclusive durante a rolagem), "É a sua vez" e "Prepare-se", passar a vez, rodada;
+  painel do mestre para abrir com a lista pré-marcada, avançar as fases, marcar modo,
+  conceder Inspiração, remover, marcar morte, adicionar no meio, pausar/retomar, cancelar e
+  finalizar com confirmação. Atualiza por SSE. Regras em
+  [`docs/negocio/iniciativa.md`](./docs/negocio/iniciativa.md).
 - Combate em curso (P9, servidor): passar a vez por quem está nela ou pelo mestre, com rotação
   transacional e contador de rodada; entrada no meio (rola antes da ordenação, vai ao fim da
   fila depois); finalizar volta a sala a `lobby`. Remover o último quando era a vez dele agora
