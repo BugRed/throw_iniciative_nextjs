@@ -39,10 +39,10 @@ export default defineConfig({
       // Não é uma meta fixa: o boilerplate nasce esqueleto (ver `server/example/`),
       // um alvo tipo 80% quebraria o CI de todo projeto recém-clonado.
       thresholds: {
-        statements: 97.47,
-        branches: 91.24,
-        functions: 97.37,
-        lines: 98.15,
+        statements: 97.61,
+        branches: 91.97,
+        functions: 97.68,
+        lines: 98.29,
         autoUpdate: true,
       },
     },
