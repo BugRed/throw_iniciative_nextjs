@@ -41,7 +41,8 @@
 `draft → rolling → ordered → active → finished`
 
 - Só o **mestre** avança. Abre as rolagens (`draft → rolling`), ordena (`rolling → ordered`)
-  e ativa o combate (`ordered → active`). `finished` é da P9.
+  e ativa o combate (`ordered → active`) e o finaliza (`active`/`paused → finished`, ver
+  abaixo).
 - O mestre **ordena só com quem já rolou**. Quem não rolou **fica de fora deste combate**, sem
   rolar depois: se estava online e saiu, perdeu a partida.
 - O mestre pode **remover** qualquer participante da fila antes ou durante o combate (kick).
@@ -59,6 +60,33 @@
 - A regra do SRD (o mestre decide entre monstros, os jogadores entre PJs) **não** é a adotada;
   vale a do produto.
 
+### Combate: vez e rodadas
+
+- Passa a vez de um **PJ** o jogador dono dele **ou** o mestre; a de um **NPC**, só o mestre.
+  O mestre pode passar qualquer vez (destrava jogador ausente).
+- A rotação é **transacional**: quem passa marca que jogou e a vez vai ao próximo da fila, sem
+  pular nem repetir, mesmo com dois cliques simultâneos.
+- Passar do **último** volta ao topo e começa a **rodada seguinte** (contador visível,
+  "Rodada N", começando em 1 ao ativar). A marca "já jogou" zera a cada rodada.
+- O próximo da fila vê "Prepare-se"; quem está na vez vê "É a sua vez".
+
+### Entrada no meio
+
+- Só o **mestre** adiciona. Pode entrar PJ ativo que não esteja na fila (inclusive de quem
+  chegou à sala depois) ou NPC (persistente ou temporário). **Não** volta quem foi removido
+  (kick é definitivo naquele combate) nem PJ morto naquela sala.
+- Em `draft` e `rolling`, entra como os demais e **rola normalmente** (jogador pelo próprio
+  PJ, mestre pelos NPCs).
+- Em `ordered` e `active`, entra **no fim da fila, sem rolar**. Com o combate em curso, joga
+  ainda nesta rodada se a vez não tiver chegado ao fim.
+
+### Finalizar
+
+- Só o **mestre**, com **confirmação**, em `active` ou `paused`. A iniciativa vai a
+  `finished` e a sala volta a `lobby` (o que libera a exclusividade).
+- A Inspiração não gasta se perde: vale só naquele combate.
+- Antes de `active` não se finaliza: cancela-se.
+
 ### Sala: `active`, pausa e exclusividade
 
 - A sala fica `active` apenas durante o que **não pode ser parado**: a iniciativa e o combate.
@@ -68,8 +96,8 @@
   sala `active`.
 - **Solicitar pause:** o jogador ocupado em outra mesa gera a notificação `pause_requested` ao
   mestre dessa mesa, **sem efeito automático**. Um pedido pendente por jogador por sala. O
-  mestre vê o jogador, não a mesa de destino. O mestre pausa pela ação do servidor; a tela
-  completa de pausar e retomar é da P9.
+  mestre vê o jogador, não a mesa de destino.
+- Em `paused`, **ninguém passa a vez nem adiciona participante**: o mestre retoma antes.
 
 ### Morte do PJ
 
@@ -92,6 +120,10 @@ convivam em `lobby` e `paused`.
 
 - Todos removidos ou ninguém rolou: o mestre não consegue ordenar (precisa de ao menos um
   participante com rolagem).
+- Quem entrou no fim da fila sem rolar continua depois de todos os que rolaram, na ordem em
+  que entrou, mesmo que a fila se reordene por uma remoção.
+- Remover o último da fila quando era a vez dele: a vez volta ao topo **e** a rodada avança.
+- O único participante restante passa a vez: volta a ele mesmo, na rodada seguinte.
 - O removido era o único que faltava rolar: o mestre já pode ordenar.
 - Lote com mais NPCs que o limite de ações: recusado por inteiro, sem gravar parte.
 - Inspiração concedida a quem já tem: continua uma só.
@@ -102,9 +134,10 @@ convivam em `lobby` e `paused`.
 
 ## Onde é aplicada
 
-Em implementação: `src/server/iniciativa/` (a criar nesta feature). Schema em
-[`prisma/schema/initiative.prisma`](../../prisma/schema/initiative.prisma). Spec:
-[`docs/features/api/0002-initiative-core.md`](../features/api/0002-initiative-core.md).
+[`src/server/iniciativa/`](../../src/server/iniciativa/) (abertura, rolagem, mesa, pausa e
+combate). Schema em [`prisma/schema/initiative.prisma`](../../prisma/schema/initiative.prisma).
+Specs: [`api/0002`](../features/api/0002-initiative-core.md) (núcleo, P8) e
+[`ui/0004`](../features/ui/0004-initiative-ux.md) (combate na tela, P9).
 
 ## Decisões em aberto
 

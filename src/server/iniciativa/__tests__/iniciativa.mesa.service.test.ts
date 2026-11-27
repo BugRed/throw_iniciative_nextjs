@@ -5,7 +5,7 @@ const { prismaMock } = vi.hoisted(() => ({
     room: { findUnique: vi.fn() },
     roomCharacter: { findUnique: vi.fn(), update: vi.fn() },
     initiative: { findFirst: vi.fn(), update: vi.fn() },
-    initiativeParticipant: { update: vi.fn() },
+    initiativeParticipant: { update: vi.fn(), updateMany: vi.fn() },
     $transaction: vi.fn(async (arg: unknown) =>
       Array.isArray(arg) ? Promise.all(arg) : (arg as (tx: unknown) => unknown)(prismaMock),
     ),
@@ -157,15 +157,49 @@ describe('removerParticipante', () => {
       data: { currentPosition: 1 },
     })
   })
+})
 
-  it('deve voltar ao início quando remove o último que estava na vez', async () => {
+describe('removerParticipante — rodada e entrantes', () => {
+  it('deve voltar ao início e avançar a rodada quando remove o último que estava na vez', async () => {
     prismaMock.initiative.findFirst.mockResolvedValue(ordenada(2))
 
     await removerParticipante(MESTRE, 'r-1', 'c')
 
     expect(prismaMock.initiative.update).toHaveBeenCalledWith({
       where: { id: 'i-1' },
-      data: { currentPosition: 0, turnStartedAt: expect.any(Date) },
+      data: { currentPosition: 0, round: { increment: 1 }, turnStartedAt: expect.any(Date) },
+    })
+    expect(prismaMock.initiativeParticipant.updateMany).toHaveBeenCalledWith({
+      where: { initiativeId: 'i-1' },
+      data: { hasPlayed: false },
+    })
+  })
+
+  it('não deve avançar a rodada quando remove o último que já tinha jogado', async () => {
+    prismaMock.initiative.findFirst.mockResolvedValue(ordenada(1))
+
+    await removerParticipante(MESTRE, 'r-1', 'c')
+
+    expect(prismaMock.initiative.update).toHaveBeenCalledWith({
+      where: { id: 'i-1' },
+      data: { currentPosition: 1 },
+    })
+    expect(prismaMock.initiativeParticipant.updateMany).not.toHaveBeenCalled()
+  })
+
+  it('deve manter quem entrou sem rolar depois dos que rolaram ao reposicionar', async () => {
+    const base = ordenada(0)
+    const anexado = participante({ id: 'z', characterId: 'z', addedMode: 'append', position: 3 })
+    prismaMock.initiative.findFirst.mockResolvedValue({
+      ...base,
+      participants: [...base.participants, anexado],
+    })
+
+    await removerParticipante(MESTRE, 'r-1', 'b')
+
+    expect(prismaMock.initiativeParticipant.update).toHaveBeenCalledWith({
+      where: { id: 'z' },
+      data: { position: 2 },
     })
   })
 })

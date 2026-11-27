@@ -2,7 +2,7 @@ import type { InitiativeParticipant, RollMode } from '@prisma/client'
 
 import { prisma } from '@/server/db/prisma'
 import { ConflictError, NotFoundError, ValidationError } from '@/server/http/errors'
-import { reposicionar } from '@/server/iniciativa/iniciativa.fila'
+import { reposicionar, zerarJogadas } from '@/server/iniciativa/iniciativa.fila'
 import {
   buscarAtual,
   type Cliente,
@@ -70,13 +70,17 @@ async function retirarDaFila(
   if (atual.status !== 'active' || alvo.position === null) return
   const eraAntes = alvo.position < atual.currentPosition
   const proxima = eraAntes ? atual.currentPosition - 1 : atual.currentPosition
+  // Era a vez do último: a vez volta ao topo e a rodada avança, como ao passar.
+  const virou = restantes.length > 0 && proxima >= restantes.length
   await cliente.initiative.update({
     where: { id: atual.id },
     data: {
-      currentPosition: proxima >= restantes.length ? 0 : proxima,
+      currentPosition: virou ? 0 : proxima,
+      ...(virou ? { round: { increment: 1 } } : {}),
       ...(alvo.position === atual.currentPosition ? { turnStartedAt: new Date() } : {}),
     },
   })
+  if (virou) await zerarJogadas(cliente, atual.id)
 }
 
 export async function removerParticipante(
