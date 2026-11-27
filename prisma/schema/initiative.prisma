@@ -45,6 +45,8 @@ model Initiative {
   room            Room             @relation(fields: [roomId], references: [id], onDelete: Cascade)
   status          InitiativeStatus @default(draft)
   currentPosition Int              @default(0) @map("current_position")
+  // Rodada do combate: avança quando a vez passa do último ao topo.
+  round           Int              @default(1)
   turnStartedAt   DateTime?        @map("turn_started_at") @db.Timestamptz(6)
   pausedAt        DateTime?        @map("paused_at") @db.Timestamptz(6)
   startedAt       DateTime?        @map("started_at") @db.Timestamptz(6)
